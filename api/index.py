@@ -14,7 +14,28 @@ if BASE_DIR not in sys.path:
 
 from app import create_app
 
-app = create_app()
+flask_app = create_app()
+
+class StripVercelPrefixMiddleware:
+    """
+    WSGI Middleware to ensure PATH_INFO is cleanly normalized
+    regardless of how Vercel routes incoming requests.
+    """
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get('PATH_INFO', '')
+        if path in ('/api/index.py', '/api/index', '/api/index/'):
+            environ['PATH_INFO'] = '/'
+        elif path.startswith('/api/index.py/'):
+            environ['PATH_INFO'] = path[len('/api/index.py'):]
+        elif path.startswith('/api/index/'):
+            environ['PATH_INFO'] = path[len('/api/index'):]
+        return self.wsgi_app(environ, start_response)
+
+# Expose WSGI application callable for Vercel
+app = StripVercelPrefixMiddleware(flask_app.wsgi_app)
 
 if __name__ == "__main__":
-    app.run()
+    flask_app.run()
