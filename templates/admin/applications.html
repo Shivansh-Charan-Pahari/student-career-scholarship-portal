@@ -123,10 +123,12 @@
                 </td>
                 <td>
                   <form action="{{ url_for('admin.update_application_status_admin', id=app.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
-                    <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 130px;">
+                    <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 140px;">
+                      <option value="Saved" {% if app.status == 'Saved' %}selected{% endif %}>Saved</option>
                       <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
                       <option value="Under Review" {% if app.status == 'Under Review' %}selected{% endif %}>Under Review</option>
                       <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                      <option value="Interview" {% if app.status == 'Interview' %}selected{% endif %}>Interview</option>
                       <option value="Accepted" {% if app.status == 'Accepted' %}selected{% endif %}>Accepted</option>
                       <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
                     </select>
