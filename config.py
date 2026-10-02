@@ -33,11 +33,11 @@ def get_normalized_database_uri():
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
         return db_url
     
-    # Check if running on Vercel serverless environment
-    if os.environ.get('VERCEL') == '1' or os.environ.get('FLASK_ENV') == 'production':
-        # On Vercel without DATABASE_URL, fallback gracefully but log warning
-        print("[WARNING] Running on Vercel/Production without DATABASE_URL. Please configure a PostgreSQL database (Neon / Supabase).", file=sys.stderr)
-        return f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'database.db')}"
+    # Check if running on Vercel or any serverless execution environment
+    if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.environ.get('LAMBDA_TASK_ROOT') or not os.access(BASE_DIR, os.W_OK):
+        # On Vercel serverless, /tmp is the only writable directory for ephemeral SQLite
+        print("[INFO] Running on Vercel serverless using /tmp SQLite storage fallback.", file=sys.stderr)
+        return "sqlite:////tmp/database.db"
 
     return f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'database.db')}"
 

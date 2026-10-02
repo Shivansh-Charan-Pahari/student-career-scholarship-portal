@@ -15,9 +15,12 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Ensure instance directory exists
-    instance_path = os.path.join(app.root_path, 'instance')
-    os.makedirs(instance_path, exist_ok=True)
+    # Ensure instance directory exists safely (avoid crash on read-only serverless filesystems)
+    try:
+        instance_path = os.path.join(app.root_path, 'instance')
+        os.makedirs(instance_path, exist_ok=True)
+    except OSError:
+        pass
 
     # Initialize extensions
     db.init_app(app)
@@ -133,11 +136,19 @@ def create_app(config_class=Config):
         return render_template('500.html'), 500
 
     with app.app_context():
-        db.create_all()
-        # Safe idempotent admin bootstrap if not in testing mode
-        if not app.config.get('TESTING'):
-            from services.auth_service import AuthService
-            AuthService.bootstrap_admin_from_env(app)
+        try:
+            db.create_all()
+            # Safe idempotent admin bootstrap & demo seed if not in testing mode
+            if not app.config.get('TESTING'):
+                if Scholarship.query.count() == 0:
+                    from seed import seed_database
+                    seed_database(app, reset=False)
+                else:
+                    from services.auth_service import AuthService
+                    AuthService.bootstrap_admin_from_env(app)
+        except Exception as err:
+            import sys
+            print(f"[ERROR] Application context initialization warning: {err}", file=sys.stderr)
 
     return app
 
