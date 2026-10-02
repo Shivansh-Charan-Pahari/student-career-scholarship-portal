@@ -12,12 +12,19 @@ from services.career_service import ROADMAP_DEFINITIONS
 from services.notification_service import NotificationService
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    root_dir = os.path.abspath(os.path.dirname(__file__))
+    app = Flask(
+        __name__,
+        root_path=root_dir,
+        static_folder=os.path.join(root_dir, 'static'),
+        static_url_path='/static',
+        template_folder=os.path.join(root_dir, 'templates')
+    )
     app.config.from_object(config_class)
 
     # Ensure instance directory exists safely (avoid crash on read-only serverless filesystems)
     try:
-        instance_path = os.path.join(app.root_path, 'instance')
+        instance_path = os.path.join(root_dir, 'instance')
         os.makedirs(instance_path, exist_ok=True)
     except OSError:
         pass
