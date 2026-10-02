@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Readiness & Skill Gap Analysis{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Navigation</div>
+      <a href="{{ url_for('student.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-th-large"></i> Dashboard
+      </a>
+      <a href="{{ url_for('student.profile') }}" class="sidebar-item">
+        <i class="fas fa-user-graduate"></i> Profile
+      </a>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('internships.list_internships') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('courses.list_courses') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('applications.list_applications') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+      <a href="{{ url_for('career.career_view') }}" class="sidebar-item active">
+        <i class="fas fa-compass"></i> Career Readiness
+      </a>
+      <a href="{{ url_for('career.roadmap_view') }}" class="sidebar-item">
+        <i class="fas fa-route"></i> Roadmap
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Personalized Career & Skill Gap Engine</h1>
+        <p class="page-subtitle">Analyze how your current skillset compares against industry benchmarks for your target engineering role.</p>
+      </div>
+
+      <!-- Target Role Selector -->
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <label for="targetRoleSelect" style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); white-space: nowrap;">Target Role:</label>
+        <select id="targetRoleSelect" class="form-control" style="width: 220px; font-weight: 600;">
+          {% for r_name in career.all_roles %}
+            <option value="{{ r_name }}" {% if selected_role == r_name %}selected{% endif %}>{{ r_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Career Readiness Score Meter Card -->
+    <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, var(--bg-card), rgba(99, 102, 241, 0.06));">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="badge badge-primary" style="margin-bottom: 0.35rem;">Benchmark: {{ career.target_role }}</span>
+          <h2 style="font-size: 1.65rem;">Career Readiness Score</h2>
+        </div>
+        <div style="font-size: 2.5rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--primary-600);">
+          {{ career.readiness_score }}%
+        </div>
+      </div>
+
+      <div class="progress-bar-container" style="height: 12px;">
+        <div class="progress-bar-fill {% if career.readiness_score >= 70 %}success{% endif %}" style="width: {{ career.readiness_score }}%;"></div>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+        Evaluated by comparing your {{ skills|length }} verified skills against required industry competencies for <strong>{{ career.target_role }}</strong>.
+      </p>
+    </div>
+
+    <!-- Skill Gap Matrix Grid (2 Columns: Benchmark Comparison & Recommended Bridges) -->
+    <div class="dashboard-grid">
+      <!-- Left Column: Competency Breakdown Matrix -->
+      <div class="card">
+        <h3 class="card-title" style="margin-bottom: 1.25rem;">
+          <i class="fas fa-list-check"></i> Role Competency Benchmark
+        </h3>
+
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+          {% for item in career.acquired_skills %}
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if item.status == 'acquired' %}
+                  <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 1.2rem;"></i>
+                {% else %}
+                  <i class="fas fa-times-circle" style="color: var(--accent-rose); font-size: 1.2rem;"></i>
+                {% endif %}
+                <span style="font-weight: 700; font-size: 0.95rem;">{{ item.name }}</span>
+              </div>
+
+              <div>
+                {% if item.status == 'acquired' %}
+                  <span class="skill-level-badge level-{{ item.level }}">{{ item.level }}</span>
+                {% else %}
+                  <span class="badge badge-danger" style="font-size: 0.75rem;">Gap / Missing</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Additional Skills Outside Benchmark -->
+        {% if career.additional_skills %}
+          <div style="margin-top: 1.75rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Additional Complementary Skills in Profile:</div>
+            <div class="skills-wrapper">
+              {% for as in career.additional_skills %}
+                <span class="skill-tag">
+                  {{ as.name }} <span class="skill-level-badge level-{{ as.level }}">{{ as.level }}</span>
+                </span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Right Column: Targeted Skill Bridging (Courses & Internships) -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Missing Skills Recommendation -->
+        <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
+          <h3 class="card-title" style="color: var(--accent-amber); margin-bottom: 0.75rem;">
+            <i class="fas fa-arrow-trend-up"></i> Next Recommended Skills
+          </h3>
+          <p style="font-size: 0.875rem; margin-bottom: 1rem;">
+            Acquiring these key skills will increase your readiness score by up to <strong>+{{ 100 - career.readiness_score }}%</strong>:
+          </p>
+
+          <div class="skills-wrapper">
+            {% for ms in career.missing_skills %}
+              <span class="skill-tag" style="border-color: var(--accent-amber); background: rgba(245, 158, 11, 0.08); font-weight: 700;">
+                <i class="fas fa-plus-circle" style="color: var(--accent-amber);"></i> {{ ms }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Bridging Courses -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-graduation-cap"></i> Courses to Bridge Skill Gaps</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for c in recommendations.courses[:3] %}
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border-subtle);">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.875rem;">{{ c.course.name }}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">{{ c.course.platform }} • Skill: <strong>{{ c.course.skill }}</strong></div>
+                </div>
+                <a href="{{ c.course.course_url }}" target="_blank" class="btn btn-primary btn-sm">Enroll</a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/career.js') }}"></script>
+{% endblock %}

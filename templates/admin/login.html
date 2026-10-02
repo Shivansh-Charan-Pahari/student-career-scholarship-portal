@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrator Sign In - Control Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 4rem 1.5rem; display: flex; justify-content: center; align-items: center; min-height: 75vh;">
+  <div class="card" style="width: 100%; max-width: 460px; padding: 2.25rem; border-color: rgba(99, 102, 241, 0.4); box-shadow: var(--shadow-lg);">
+    
+    <!-- Role Switcher Tabs -->
+    <div style="display: flex; background: var(--bg-main); padding: 4px; border-radius: var(--radius-md); margin-bottom: 2rem; border: 1px solid var(--border-subtle);">
+      <a href="{{ url_for('auth.login') }}" style="flex: 1; text-align: center; padding: 0.55rem; font-size: 0.875rem; font-weight: 600; color: var(--text-muted); border-radius: var(--radius-sm); text-decoration: none; transition: all var(--transition-fast);">
+        <i class="fas fa-user-graduate"></i> Student
+      </a>
+      <a href="{{ url_for('auth.admin_login') }}" style="flex: 1; text-align: center; padding: 0.55rem; font-size: 0.875rem; font-weight: 700; color: var(--primary-600); background: var(--bg-surface); border-radius: var(--radius-sm); text-decoration: none; box-shadow: var(--shadow-xs);">
+        <i class="fas fa-user-shield"></i> Administrator
+      </a>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="feature-icon" style="margin: 0 auto 1rem; width: 52px; height: 52px; background: linear-gradient(135deg, #1e1b4b, var(--primary-600));">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h2 style="font-size: 1.75rem; margin-bottom: 0.35rem;">Admin Control Center</h2>
+      <p style="font-size: 0.9rem;">Sign in to access student management, CRUD & analytics</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.admin_login') }}" id="admin-login-form">
+      <div class="form-group">
+        <label class="form-label" for="admin-email">Administrator Email</label>
+        <div style="position: relative;">
+          <input type="email" name="email" id="admin-email" class="form-control" placeholder="admin@portal.com" value="{{ email or '' }}" required autofocus>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="admin-password">Administrator Password</label>
+        <input type="password" name="password" id="admin-password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; height: 46px;" id="admin-login-btn">
+        <i class="fas fa-shield-alt"></i> Access Admin Console
+      </button>
+    </form>
+
+    <!-- One-Click Demo Admin Autofill -->
+    <div style="margin-top: 1.5rem; background: var(--bg-main); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; font-size: 0.85rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+        <span style="font-weight: 700; color: var(--text-main);"><i class="fas fa-key" style="color: var(--accent-amber);"></i> Seed Demo Admin:</span>
+        <button type="button" class="btn btn-secondary btn-sm" id="autofill-admin-btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+          <i class="fas fa-magic"></i> Auto-fill
+        </button>
+      </div>
+      <div style="color: var(--text-muted); font-size: 0.8rem;">
+        Email: <code>admin@portal.com</code><br>
+        Password: <code>Admin@123</code>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('autofill-admin-btn')?.addEventListener('click', () => {
+    document.getElementById('admin-email').value = 'admin@portal.com';
+    document.getElementById('admin-password').value = 'Admin@123';
+    showToast('Credentials Filled', 'Demo admin login credentials populated.', 'info');
+  });
+</script>
+{% endblock %}

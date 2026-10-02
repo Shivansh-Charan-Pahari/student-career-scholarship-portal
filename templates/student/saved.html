@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Saved Bookmarks - Student Career Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Navigation</div>
+      <a href="{{ url_for('student.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-th-large"></i> Dashboard
+      </a>
+      <a href="{{ url_for('student.profile') }}" class="sidebar-item">
+        <i class="fas fa-user-graduate"></i> Profile
+      </a>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('internships.list_internships') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('courses.list_courses') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('applications.list_applications') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+      <a href="{{ url_for('student.saved') }}" class="sidebar-item active">
+        <i class="fas fa-bookmark"></i> Saved Items
+      </a>
+      <a href="{{ url_for('career.career_view') }}" class="sidebar-item">
+        <i class="fas fa-compass"></i> Career Readiness
+      </a>
+      <a href="{{ url_for('career.roadmap_view') }}" class="sidebar-item">
+        <i class="fas fa-route"></i> Roadmap
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Saved Opportunities</h1>
+        <p class="page-subtitle">Your personalized bookmarks across scholarships, internships, and courses.</p>
+      </div>
+    </div>
+
+    <!-- Tabs Container -->
+    <div class="tab-wrapper">
+      <div class="tab-nav">
+        <button class="tab-btn active" data-target="tab-all-saved">
+          All Bookmarks ({{ total_saved }})
+        </button>
+        <button class="tab-btn" data-target="tab-saved-scholarships">
+          Scholarships ({{ scholarships|length }})
+        </button>
+        <button class="tab-btn" data-target="tab-saved-internships">
+          Internships ({{ internships|length }})
+        </button>
+        <button class="tab-btn" data-target="tab-saved-courses">
+          Courses ({{ courses|length }})
+        </button>
+      </div>
+
+      <!-- 1. All Bookmarks Tab -->
+      <div class="tab-pane active" id="tab-all-saved">
+        {% if total_saved > 0 %}
+          <div class="opportunity-grid">
+            <!-- Saved Scholarships -->
+            {% for item in scholarships %}
+              {% set s = item.data %}
+              <div class="opp-card">
+                <div>
+                  <div class="opp-top">
+                    <span class="opp-provider">{{ s.provider }}</span>
+                    <span class="badge badge-primary">Scholarship</span>
+                  </div>
+                  <h3 class="opp-title">{{ s.name }}</h3>
+                  <p class="opp-desc">{{ s.description }}</p>
+                  <div class="opp-meta">
+                    <div class="opp-meta-item"><i class="fas fa-calendar-alt"></i> Deadline: {{ s.deadline }}</div>
+                  </div>
+                </div>
+                <div class="opp-footer">
+                  <div class="opp-amount">{{ s.amount }}</div>
+                  <div class="opp-actions">
+                    <button class="btn btn-primary btn-sm btn-save-opp" data-type="scholarship" data-id="{{ s.id }}" data-saved="true" title="Remove bookmark">
+                      <i class="fas fa-bookmark"></i>
+                    </button>
+                    <a href="{{ url_for('scholarships.scholarship_detail', scholarship_id=s.id) }}" class="btn btn-secondary btn-sm">Details</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+            <!-- Saved Internships -->
+            {% for item in internships %}
+              {% set intern = item.data %}
+              <div class="opp-card">
+                <div>
+                  <div class="opp-top">
+                    <span class="opp-provider">{{ intern.company }}</span>
+                    <span class="badge badge-info">{{ intern.work_mode }}</span>
+                  </div>
+                  <h3 class="opp-title">{{ intern.title }}</h3>
+                  <p class="opp-desc">{{ intern.description }}</p>
+                  <div class="opp-meta">
+                    <div class="opp-meta-item"><i class="fas fa-map-marker-alt"></i> {{ intern.location }}</div>
+                    <div class="opp-meta-item"><i class="fas fa-clock"></i> {{ intern.duration }}</div>
+                  </div>
+                </div>
+                <div class="opp-footer">
+                  <div class="opp-amount">{{ intern.stipend }}</div>
+                  <div class="opp-actions">
+                    <button class="btn btn-primary btn-sm btn-save-opp" data-type="internship" data-id="{{ intern.id }}" data-saved="true" title="Remove bookmark">
+                      <i class="fas fa-bookmark"></i>
+                    </button>
+                    <a href="{{ url_for('internships.internship_detail', internship_id=intern.id) }}" class="btn btn-secondary btn-sm">Details</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+            <!-- Saved Courses -->
+            {% for item in courses %}
+              {% set c = item.data %}
+              <div class="opp-card">
+                <div>
+                  <div class="opp-top">
+                    <span class="opp-provider">{{ c.platform }}</span>
+                    <span class="badge badge-primary">{{ c.level }}</span>
+                  </div>
+                  <h3 class="opp-title">{{ c.name }}</h3>
+                  <p class="opp-desc">{{ c.description }}</p>
+                  <div class="opp-meta">
+                    <div class="opp-meta-item"><i class="fas fa-tag"></i> {{ c.skill }}</div>
+                  </div>
+                </div>
+                <div class="opp-footer">
+                  <div class="opp-amount">{{ c.price }}</div>
+                  <div class="opp-actions">
+                    <button class="btn btn-primary btn-sm btn-save-opp" data-type="course" data-id="{{ c.id }}" data-saved="true" title="Remove bookmark">
+                      <i class="fas fa-bookmark"></i>
+                    </button>
+                    <a href="{{ c.course_url }}" target="_blank" class="btn btn-secondary btn-sm">Enroll</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="far fa-bookmark"></i></div>
+            <h3 class="empty-state-title">You haven't saved anything yet</h3>
+            <p class="empty-state-desc">Explore scholarships, internships, and courses to bookmark opportunities for later review.</p>
+            <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-primary btn-sm">Explore Scholarships</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- 2. Scholarships Tab -->
+      <div class="tab-pane" id="tab-saved-scholarships">
+        {% if scholarships %}
+          <div class="opportunity-grid">
+            {% for item in scholarships %}
+              {% set s = item.data %}
+              <div class="opp-card">
+                <div>
+                  <div class="opp-top">
+                    <span class="opp-provider">{{ s.provider }}</span>
+                    <span class="badge badge-primary">Scholarship</span>
+                  </div>
+                  <h3 class="opp-title">{{ s.name }}</h3>
+                  <p class="opp-desc">{{ s.description }}</p>
+                  <div class="opp-meta">
+                    <div class="opp-meta-item"><i class="fas fa-calendar-alt"></i> Deadline: {{ s.deadline }}</div>
+                  </div>
+                </div>
+                <div class="opp-footer">
+                  <div class="opp-amount">{{ s.amount }}</div>
+                  <div class="opp-actions">
+                    <button class="btn btn-primary btn-sm btn-save-opp" data-type="scholarship" data-id="{{ s.id }}" data-saved="true">
+                      <i class="fas fa-bookmark"></i>
+                    </button>
+                    <a href="{{ url_for('scholarships.scholarship_detail', scholarship_id=s.id) }}" class="btn btn-secondary btn-sm">Details</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <h3 class="empty-state-title">No saved scholarships</h3>
+            <p class="empty-state-desc">Browse scholarships and click the bookmark button on any card.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- 3. Internships Tab -->
+      <div class="tab-pane" id="tab-saved-internships">
+        {% if internships %}
+          <div class="opportunity-grid">
+            {% for item in internships %}
+              {% set intern = item.data %}
+              <div class="opp-card">
+                <div>
+                  <div class="opp-top">
+                    <span class="opp-provider">{{ intern.company }}</span>
+                    <span class="badge badge-info">{{ intern.work_mode }}</span>
+                  </div>
+                  <h3 class="opp-title">{{ intern.title }}</h3>
+                  <p class="opp-desc">{{ intern.description }}</p>
+                </div>
+                <div class="opp-footer">
+                  <div class="opp-amount">{{ intern.stipend }}</div>
+                  <div class="opp-actions">
+                    <button class="btn btn-primary btn-sm btn-save-opp" data-type="internship" data-id="{{ intern.id }}" data-saved="true">
+                      <i class="fas fa-bookmark"></i>
+                    </button>
+                    <a href="{{ url_for('internships.internship_detail', internship_id=intern.id) }}" class="btn btn-secondary btn-sm">Details</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <h3 class="empty-state-title">No saved internships</h3>
+            <p class="empty-state-desc">Find software, web dev, and AI internships to bookmark.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- 4. Courses Tab -->
+      <div class="tab-pane" id="tab-saved-courses">
+        {% if courses %}
+          <div class="opportunity-grid">
+            {% for item in courses %}
+              {% set c = item.data %}
+              <div class="opp-card">
+                <div>
+                  <div class="opp-top">
+                    <span class="opp-provider">{{ c.platform }}</span>
+                    <span class="badge badge-primary">{{ c.level }}</span>
+                  </div>
+                  <h3 class="opp-title">{{ c.name }}</h3>
+                  <p class="opp-desc">{{ c.description }}</p>
+                </div>
+                <div class="opp-footer">
+                  <div class="opp-amount">{{ c.price }}</div>
+                  <div class="opp-actions">
+                    <button class="btn btn-primary btn-sm btn-save-opp" data-type="course" data-id="{{ c.id }}" data-saved="true">
+                      <i class="fas fa-bookmark"></i>
+                    </button>
+                    <a href="{{ c.course_url }}" target="_blank" class="btn btn-secondary btn-sm">Enroll</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <h3 class="empty-state-title">No saved courses</h3>
+            <p class="empty-state-desc">Explore courses to upskill for your target role.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

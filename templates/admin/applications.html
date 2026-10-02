@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Applications - Administrator Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Admin Console</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.students_list') }}" class="sidebar-item">
+        <i class="fas fa-users"></i> Students
+      </a>
+      <a href="{{ url_for('admin.scholarships_crud') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('admin.internships_crud') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('admin.courses_crud') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('admin.applications_manage') }}" class="sidebar-item active">
+        <i class="fas fa-tasks"></i> Applications ({{ applications|length }})
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Manage Student Applications</h1>
+        <p class="page-subtitle">Review applicant dossiers, update evaluation stages, and trigger real-time notifications to applicants.</p>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <form method="GET" action="{{ url_for('admin.applications_manage') }}">
+        <div class="form-row" style="grid-template-columns: 1fr 1fr auto; align-items: flex-end;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Status Stage</label>
+            <select name="status" class="form-control">
+              <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All Statuses</option>
+              <option value="Applied" {% if selected_status == 'Applied' %}selected{% endif %}>Applied</option>
+              <option value="Under Review" {% if selected_status == 'Under Review' %}selected{% endif %}>Under Review</option>
+              <option value="Shortlisted" {% if selected_status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+              <option value="Accepted" {% if selected_status == 'Accepted' %}selected{% endif %}>Accepted</option>
+              <option value="Rejected" {% if selected_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Opportunity Type</label>
+            <select name="type" class="form-control">
+              <option value="All" {% if selected_type == 'All' %}selected{% endif %}>All Types</option>
+              <option value="scholarship" {% if selected_type == 'scholarship' %}selected{% endif %}>Scholarships</option>
+              <option value="internship" {% if selected_type == 'internship' %}selected{% endif %}>Internships</option>
+              <option value="course" {% if selected_type == 'course' %}selected{% endif %}>Courses</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="height: 42px;">
+              <i class="fas fa-filter"></i> Filter
+            </button>
+            <a href="{{ url_for('admin.applications_manage') }}" class="btn btn-secondary" style="height: 42px;">
+              <i class="fas fa-undo"></i>
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Application ID</th>
+            <th>Applicant Student</th>
+            <th>Target Opportunity</th>
+            <th>Type</th>
+            <th>Date Logged</th>
+            <th>Current Status</th>
+            <th>Update Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if applications %}
+            {% for app in applications %}
+              {% set opp = app.get_opportunity() %}
+              <tr>
+                <td>#{{ app.id }}</td>
+                <td>
+                  <div class="table-avatar-cell">
+                    <div class="table-avatar">{{ app.user.name[0] }}</div>
+                    <div>
+                      <a href="{{ url_for('admin.student_detail', student_id=app.user_id) }}">
+                        <strong>{{ app.user.name }}</strong>
+                      </a>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">{{ app.user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <strong>{{ app.opportunity_title }}</strong>
+                </td>
+                <td>
+                  <span class="badge {% if app.opportunity_type == 'scholarship' %}badge-primary{% elif app.opportunity_type == 'internship' %}badge-info{% else %}badge-warning{% endif %}">
+                    {{ app.opportunity_type|capitalize }}
+                  </span>
+                </td>
+                <td>{{ app.application_date.strftime('%Y-%m-%d') if app.application_date else 'N/A' }}</td>
+                <td>
+                  <span class="badge {% if app.status == 'Accepted' %}badge-success{% elif app.status == 'Rejected' %}badge-danger{% elif app.status == 'Under Review' %}badge-warning{% else %}badge-primary{% endif %}">
+                    {{ app.status }}
+                  </span>
+                </td>
+                <td>
+                  <form action="{{ url_for('admin.update_application_status_admin', id=app.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
+                    <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 130px;">
+                      <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                      <option value="Under Review" {% if app.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                      <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                      <option value="Accepted" {% if app.status == 'Accepted' %}selected{% endif %}>Accepted</option>
+                      <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm" title="Update status and notify student">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                No applications match the selected criteria.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

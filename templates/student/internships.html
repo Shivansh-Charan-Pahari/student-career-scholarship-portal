@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Internships Directory - Student Career Portal{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 4rem;">
+  <!-- Header Banner -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Industry Internships & Roles</h1>
+      <p class="page-subtitle">Kickstart your practical journey with paid engineering and technology internships.</p>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls Card -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <form method="GET" action="{{ url_for('internships.list_internships') }}">
+      <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: flex-end;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="search-input">Search Openings</label>
+          <input type="text" name="search" id="search-input" class="form-control" placeholder="Search by role, company, skills..." value="{{ search }}">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="domain-select">Engineering Domain</label>
+          <select name="domain" id="domain-select" class="form-control">
+            {% for d in all_domains %}
+              <option value="{{ d }}" {% if selected_domain == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="work-mode-select">Work Mode</label>
+          <select name="work_mode" id="work-mode-select" class="form-control">
+            {% for wm in all_work_modes %}
+              <option value="{{ wm }}" {% if selected_work_mode == wm %}selected{% endif %}>{{ wm }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="submit" class="btn btn-primary" style="height: 42px;">
+            <i class="fas fa-filter"></i> Apply
+          </button>
+          <a href="{{ url_for('internships.list_internships') }}" class="btn btn-secondary" style="height: 42px;" title="Reset filters">
+            <i class="fas fa-undo"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Count -->
+  <div style="margin-bottom: 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem;">
+    Showing <span style="color: var(--text-main);">{{ total_count }}</span> Internship Positions
+  </div>
+
+  <!-- Internships Grid -->
+  {% if internships %}
+    <div class="opportunity-grid">
+      {% for intern in internships %}
+        {% set is_saved = intern.id in saved_ids %}
+        {% set is_applied = intern.id in applied_ids %}
+        <div class="opp-card">
+          <div>
+            <div class="opp-top">
+              <span class="opp-provider"><i class="fas fa-building"></i> {{ intern.company }}</span>
+              <span class="badge {% if intern.work_mode == 'Remote' %}badge-success{% elif intern.work_mode == 'Hybrid' %}badge-info{% else %}badge-primary{% endif %}">
+                {{ intern.work_mode }}
+              </span>
+            </div>
+
+            <h3 class="opp-title">{{ intern.title }}</h3>
+            <p class="opp-desc">{{ intern.description }}</p>
+
+            <div class="opp-meta">
+              <div class="opp-meta-item"><i class="fas fa-map-marker-alt"></i> {{ intern.location }}</div>
+              <div class="opp-meta-item"><i class="fas fa-clock"></i> {{ intern.duration }}</div>
+              <div class="opp-meta-item"><i class="fas fa-calendar-alt"></i> Deadline: {{ intern.deadline }}</div>
+            </div>
+
+            <!-- Required Skills Pills -->
+            <div style="margin-bottom: 1.25rem;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.35rem;">Required Skills:</div>
+              <div class="skills-wrapper" style="margin-top: 0;">
+                {% for sk in intern.required_skills.split(',') %}
+                  {% if sk.strip() %}
+                    <span class="badge badge-primary" style="font-size: 0.75rem;">{{ sk.strip() }}</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="opp-footer">
+            <div class="opp-amount">{{ intern.stipend }}</div>
+            <div class="opp-actions">
+              <button class="btn btn-sm btn-save-opp {% if is_saved %}btn-primary{% else %}btn-secondary{% endif %}" 
+                      data-type="internship" 
+                      data-id="{{ intern.id }}" 
+                      data-saved="{{ 'true' if is_saved else 'false' }}"
+                      title="Save internship">
+                <i class="{% if is_saved %}fas{% else %}far{% endif %} fa-bookmark"></i>
+              </button>
+
+              <a href="{{ url_for('internships.internship_detail', internship_id=intern.id) }}" class="btn btn-secondary btn-sm">
+                Details
+              </a>
+
+              {% if is_logged_in %}
+                <form action="{{ url_for('applications.create_application') }}" method="POST" style="display: inline;">
+                  <input type="hidden" name="opportunity_type" value="internship">
+                  <input type="hidden" name="opportunity_id" value="{{ intern.id }}">
+                  <input type="hidden" name="status" value="Applied">
+                  <input type="hidden" name="deadline" value="{{ intern.deadline }}">
+                  <button type="submit" class="btn {% if is_applied %}btn-success{% else %}btn-primary{% endif %} btn-sm">
+                    <i class="fas {% if is_applied %}fa-check{% else %}fa-paper-plane{% endif %}"></i> {{ 'Applied' if is_applied else 'Apply' }}
+                  </button>
+                </form>
+              {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Apply</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fas fa-briefcase"></i></div>
+      <h3 class="empty-state-title">No matching internships found</h3>
+      <p class="empty-state-desc">Try clearing filters or searching for different domains like Web Development or Python.</p>
+      <a href="{{ url_for('internships.list_internships') }}" class="btn btn-primary btn-sm">Reset Filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

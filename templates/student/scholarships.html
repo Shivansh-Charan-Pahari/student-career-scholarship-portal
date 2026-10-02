@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Scholarships Directory & Eligibility Engine{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 4rem;">
+  <!-- Header Banner -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Explore Scholarships & Grants</h1>
+      <p class="page-subtitle">Find financial assistance tailored to your academic branch, social category, and CGPA score.</p>
+    </div>
+    {% if not is_logged_in %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-user-plus"></i> Create Profile for Live Match Scoring
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Search & Filter Controls Card -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <form method="GET" action="{{ url_for('scholarships.list_scholarships') }}" id="scholarship-filter-form">
+      <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr 1fr auto; align-items: flex-end;">
+        <!-- Search Keywords -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="search-input">Search Keywords</label>
+          <input type="text" name="search" id="search-input" class="form-control" placeholder="Search by name, provider, branch..." value="{{ search }}">
+        </div>
+
+        <!-- Academic Branch Filter -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="branch-select">Academic Branch</label>
+          <select name="branch" id="branch-select" class="form-control">
+            {% for b in all_branches %}
+              <option value="{{ b }}" {% if selected_branch == b %}selected{% endif %}>{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Social Category Filter -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="category-select">Social Category</label>
+          <select name="category" id="category-select" class="form-control">
+            {% for c in all_categories %}
+              <option value="{{ c }}" {% if selected_category == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="sort-select">Sort By</label>
+          <select name="sort" id="sort-select" class="form-control">
+            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Added</option>
+            {% if is_logged_in %}
+              <option value="match_score" {% if sort_by == 'match_score' %}selected{% endif %}>Best Match Score</option>
+            {% endif %}
+            <option value="amount" {% if sort_by == 'amount' %}selected{% endif %}>Highest Amount</option>
+            <option value="deadline" {% if sort_by == 'deadline' %}selected{% endif %}>Nearest Deadline</option>
+          </select>
+        </div>
+
+        <!-- Filter Submit Button -->
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="submit" class="btn btn-primary" style="height: 42px;">
+            <i class="fas fa-filter"></i> Apply
+          </button>
+          <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-secondary" style="height: 42px;" title="Reset filters">
+            <i class="fas fa-undo"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Count Badge -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div style="font-weight: 700; color: var(--text-muted); font-size: 0.95rem;">
+      Showing <span style="color: var(--text-main);">{{ total_count }}</span> Scholarships
+    </div>
+    {% if profile %}
+      <div style="font-size: 0.85rem; color: var(--text-dim);">
+        <i class="fas fa-info-circle" style="color: var(--primary-500);"></i> Calculated for: <strong>{{ profile.branch or 'General' }}</strong> (CGPA: {{ profile.cgpa or 'N/A' }})
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Scholarships Cards Grid -->
+  {% if scholarships %}
+    <div class="opportunity-grid">
+      {% for item in scholarships %}
+        {% set s = item.item %}
+        <div class="opp-card">
+          <div>
+            <div class="opp-top">
+              <span class="opp-provider"><i class="fas fa-university"></i> {{ s.provider }}</span>
+              
+              {% if item.match_score is not none %}
+                <span class="match-score-pill {% if item.match_score >= 80 %}score-high{% elif item.match_score >= 60 %}score-medium{% else %}score-low{% endif %}">
+                  <i class="fas fa-bolt"></i> {{ item.match_score }}% Match
+                </span>
+              {% else %}
+                <span class="badge badge-primary">Scholarship</span>
+              {% endif %}
+            </div>
+
+            <h3 class="opp-title">{{ s.name }}</h3>
+            <p class="opp-desc">{{ s.description }}</p>
+
+            <div class="opp-meta">
+              <div class="opp-meta-item"><i class="fas fa-graduation-cap"></i> Min CGPA: {{ s.minimum_cgpa if s.minimum_cgpa > 0 else 'None' }}</div>
+              <div class="opp-meta-item"><i class="fas fa-calendar-alt"></i> Deadline: {{ s.deadline }}</div>
+              <div class="opp-meta-item"><i class="fas fa-users"></i> Category: {{ s.eligible_categories }}</div>
+              <div class="opp-meta-item"><i class="fas fa-code-branch"></i> {{ s.eligible_branches }}</div>
+            </div>
+
+            {% if item.eligible is not none %}
+              <div style="margin-bottom: 1rem; font-size: 0.8rem; font-weight: 600;">
+                {% if item.eligible %}
+                  <span style="color: var(--accent-emerald);"><i class="fas fa-check-circle"></i> You are eligible to apply</span>
+                {% else %}
+                  <span style="color: var(--accent-rose);"><i class="fas fa-times-circle"></i> Criteria mismatch (Click Check to view reasons)</span>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="opp-footer">
+            <div class="opp-amount">{{ s.amount }}</div>
+            <div class="opp-actions">
+              <!-- Bookmark Button -->
+              <button class="btn btn-sm btn-save-opp {% if item.is_saved %}btn-primary{% else %}btn-secondary{% endif %}" 
+                      data-type="scholarship" 
+                      data-id="{{ s.id }}" 
+                      data-saved="{{ 'true' if item.is_saved else 'false' }}"
+                      title="Bookmark scholarship">
+                <i class="{% if item.is_saved %}fas{% else %}far{% endif %} fa-bookmark"></i>
+              </button>
+
+              <!-- Check Eligibility Trigger -->
+              <button class="btn btn-outline-primary btn-sm btn-check-eligibility" data-id="{{ s.id }}">
+                <i class="fas fa-calculator"></i> Check
+              </button>
+
+              <!-- Details Page -->
+              <a href="{{ url_for('scholarships.scholarship_detail', scholarship_id=s.id) }}" class="btn btn-primary btn-sm">
+                Details
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fas fa-search"></i></div>
+      <h3 class="empty-state-title">No matching scholarships found</h3>
+      <p class="empty-state-desc">Try clearing filters or searching with different keywords like "Engineering" or "Merit".</p>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-primary btn-sm">Reset All Filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/scholarships.js') }}"></script>
+{% endblock %}

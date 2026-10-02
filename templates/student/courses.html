@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Curated Courses & Certifications - Student Career Portal{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 4rem;">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Curated Technical Courses</h1>
+      <p class="page-subtitle">Bridge your technical skill gaps with premier certified courses from Coursera, edX, NPTEL, and FreeCodeCamp.</p>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <form method="GET" action="{{ url_for('courses.list_courses') }}">
+      <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr 1fr auto; align-items: flex-end;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="search-input">Search Course / Skill</label>
+          <input type="text" name="search" id="search-input" class="form-control" placeholder="Search Python, SQL, DSA, Machine Learning..." value="{{ search }}">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="level-select">Proficiency Level</label>
+          <select name="level" id="level-select" class="form-control">
+            {% for lvl in all_levels %}
+              <option value="{{ lvl }}" {% if selected_level == lvl %}selected{% endif %}>{{ lvl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="platform-select">Platform Provider</label>
+          <select name="platform" id="platform-select" class="form-control">
+            {% for p in all_platforms %}
+              <option value="{{ p }}" {% if selected_platform == p %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="price-select">Price Type</label>
+          <select name="price" id="price-select" class="form-control">
+            <option value="" {% if not selected_price %}selected{% endif %}>All Prices</option>
+            <option value="Free" {% if selected_price == 'Free' %}selected{% endif %}>Free / Audit</option>
+            <option value="Paid" {% if selected_price == 'Paid' %}selected{% endif %}>Paid Courses</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="submit" class="btn btn-primary" style="height: 42px;">
+            <i class="fas fa-filter"></i> Apply
+          </button>
+          <a href="{{ url_for('courses.list_courses') }}" class="btn btn-secondary" style="height: 42px;" title="Reset filters">
+            <i class="fas fa-undo"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div style="margin-bottom: 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem;">
+    Showing <span style="color: var(--text-main);">{{ total_count }}</span> Courses
+  </div>
+
+  <!-- Courses Grid -->
+  {% if courses %}
+    <div class="opportunity-grid">
+      {% for course in courses %}
+        {% set is_saved = course.id in saved_ids %}
+        <div class="opp-card">
+          <div>
+            <div class="opp-top">
+              <span class="opp-provider"><i class="fas fa-desktop"></i> {{ course.platform }}</span>
+              <span class="badge badge-primary">{{ course.level }}</span>
+            </div>
+
+            <h3 class="opp-title">{{ course.name }}</h3>
+            <p class="opp-desc">{{ course.description }}</p>
+
+            <div class="opp-meta">
+              <div class="opp-meta-item"><i class="fas fa-tag"></i> Target Skill: {{ course.skill }}</div>
+              <div class="opp-meta-item"><i class="fas fa-clock"></i> {{ course.duration }}</div>
+              <div class="opp-meta-item">
+                <i class="fas fa-star" style="color: var(--accent-amber);"></i> {{ course.rating }} / 5.0
+              </div>
+            </div>
+          </div>
+
+          <div class="opp-footer">
+            <div class="opp-amount">{{ course.price }}</div>
+            <div class="opp-actions">
+              <button class="btn btn-sm btn-save-opp {% if is_saved %}btn-primary{% else %}btn-secondary{% endif %}" 
+                      data-type="course" 
+                      data-id="{{ course.id }}" 
+                      data-saved="{{ 'true' if is_saved else 'false' }}"
+                      title="Save course">
+                <i class="{% if is_saved %}fas{% else %}far{% endif %} fa-bookmark"></i>
+              </button>
+
+              <a href="{{ course.course_url }}" target="_blank" class="btn btn-primary btn-sm">
+                Enroll <i class="fas fa-external-link-alt"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fas fa-book-open"></i></div>
+      <h3 class="empty-state-title">No matching courses found</h3>
+      <p class="empty-state-desc">Try clearing filters or searching for foundational skills like Python, SQL, or Web Development.</p>
+      <a href="{{ url_for('courses.list_courses') }}" class="btn btn-primary btn-sm">Reset Filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

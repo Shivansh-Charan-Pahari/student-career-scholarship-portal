@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Application Tracker - Student Career Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Navigation</div>
+      <a href="{{ url_for('student.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-th-large"></i> Dashboard
+      </a>
+      <a href="{{ url_for('student.profile') }}" class="sidebar-item">
+        <i class="fas fa-user-graduate"></i> Profile
+      </a>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('internships.list_internships') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('courses.list_courses') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('applications.list_applications') }}" class="sidebar-item active">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+      <a href="{{ url_for('career.career_view') }}" class="sidebar-item">
+        <i class="fas fa-compass"></i> Career Readiness
+      </a>
+      <a href="{{ url_for('career.roadmap_view') }}" class="sidebar-item">
+        <i class="fas fa-route"></i> Roadmap
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Application Pipeline Tracker</h1>
+        <p class="page-subtitle">Monitor and update the stages of your submitted scholarships and internship applications.</p>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('manualAppModal')">
+        <i class="fas fa-plus"></i> Log New Application
+      </button>
+    </div>
+
+    <!-- Status Filters Bar -->
+    <div class="card" style="padding: 0.75rem 1.25rem; margin-bottom: 2rem;">
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ url_for('applications.list_applications') }}" class="btn {% if selected_status == 'All' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+          All ({{ status_counts.All }})
+        </a>
+        <a href="{{ url_for('applications.list_applications') }}?status=Applied" class="btn {% if selected_status == 'Applied' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+          Applied ({{ status_counts.Applied }})
+        </a>
+        <a href="{{ url_for('applications.list_applications') }}?status=Under Review" class="btn {% if selected_status == 'Under Review' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+          Under Review ({{ status_counts['Under Review'] }})
+        </a>
+        <a href="{{ url_for('applications.list_applications') }}?status=Shortlisted" class="btn {% if selected_status == 'Shortlisted' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+          Shortlisted ({{ status_counts.Shortlisted }})
+        </a>
+        <a href="{{ url_for('applications.list_applications') }}?status=Accepted" class="btn {% if selected_status == 'Accepted' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+          Accepted ({{ status_counts.Accepted }})
+        </a>
+        <a href="{{ url_for('applications.list_applications') }}?status=Rejected" class="btn {% if selected_status == 'Rejected' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+          Rejected ({{ status_counts.Rejected }})
+        </a>
+      </div>
+    </div>
+
+    <!-- Application List with Visual Timelines -->
+    {% if applications %}
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for app in applications %}
+          {% set opp = app.get_opportunity() %}
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <span class="badge {% if app.opportunity_type == 'scholarship' %}badge-primary{% elif app.opportunity_type == 'internship' %}badge-info{% else %}badge-warning{% endif %}" style="margin-bottom: 0.5rem;">
+                  {{ app.opportunity_type|capitalize }}
+                </span>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.25rem;">
+                  {{ app.opportunity_title }}
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                  Provider / Organization: <strong>{{ app.opportunity_provider }}</strong>
+                </p>
+              </div>
+
+              <!-- Status Badge -->
+              <div>
+                {% if app.status == 'Accepted' %}
+                  <span class="badge badge-success" style="font-size: 0.9rem; padding: 0.35rem 0.85rem;"><i class="fas fa-check-circle"></i> Accepted</span>
+                {% elif app.status == 'Rejected' %}
+                  <span class="badge badge-danger" style="font-size: 0.9rem; padding: 0.35rem 0.85rem;"><i class="fas fa-times-circle"></i> Rejected</span>
+                {% elif app.status == 'Shortlisted' %}
+                  <span class="badge badge-info" style="font-size: 0.9rem; padding: 0.35rem 0.85rem;"><i class="fas fa-star"></i> Shortlisted</span>
+                {% elif app.status == 'Under Review' %}
+                  <span class="badge badge-warning" style="font-size: 0.9rem; padding: 0.35rem 0.85rem;"><i class="fas fa-spinner fa-spin"></i> Under Review</span>
+                {% else %}
+                  <span class="badge badge-primary" style="font-size: 0.9rem; padding: 0.35rem 0.85rem;"><i class="fas fa-paper-plane"></i> Applied</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Visual Pipeline Timeline (Saved -> Applied -> Under Review -> Shortlisted -> Accepted) -->
+            <div class="pipeline-container">
+              {% set stage_order = ['Saved', 'Applied', 'Under Review', 'Shortlisted', 'Accepted'] %}
+              {% set current_idx = -1 %}
+              {% for s_name in stage_order %}
+                {% if app.status == s_name %}
+                  {% set current_idx = loop.index0 %}
+                {% endif %}
+              {% endfor %}
+              
+              {% for st in stage_order %}
+                {% set is_active = (app.status == st) %}
+                {% set is_done = (current_idx >= loop.index0 and app.status != 'Rejected') %}
+                <div class="pipeline-step {% if is_active %}active{% elif is_done %}completed{% endif %}">
+                  <div class="pipeline-dot">
+                    {% if is_done and not is_active %}
+                      <i class="fas fa-check" style="font-size: 0.75rem;"></i>
+                    {% else %}
+                      {{ loop.index }}
+                    {% endif %}
+                  </div>
+                  <div class="pipeline-label">{{ st }}</div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Application Meta & Notes -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 0.5rem; flex-wrap: wrap; gap: 1rem;">
+              <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                <span><i class="far fa-calendar-alt"></i> Applied: {{ app.application_date.strftime('%b %d, %Y') if app.application_date else 'N/A' }}</span>
+                {% if app.deadline %}
+                  <span><i class="fas fa-hourglass-end" style="color: var(--accent-rose);"></i> Deadline: {{ app.deadline }}</span>
+                {% endif %}
+                {% if app.notes %}
+                  <span><i class="fas fa-sticky-note" style="color: var(--primary-500);"></i> Notes: <em>"{{ app.notes }}"</em></span>
+                {% endif %}
+              </div>
+
+              <div style="display: flex; gap: 0.5rem;">
+                <!-- Update Status Button -->
+                <button class="btn btn-secondary btn-sm btn-update-app-status"
+                        data-id="{{ app.id }}"
+                        data-status="{{ app.status }}"
+                        data-notes="{{ app.notes or '' }}">
+                  <i class="fas fa-edit"></i> Update Status
+                </button>
+
+                <!-- Delete Action -->
+                <form action="{{ url_for('applications.delete_application', app_id=app.id) }}" method="POST" onsubmit="return confirm('Remove this application from tracker?');">
+                  <button type="submit" class="btn btn-icon" style="height: 34px; width: 34px; color: var(--accent-rose);" title="Remove">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-tasks"></i></div>
+        <h3 class="empty-state-title">Your application tracker is empty</h3>
+        <p class="empty-state-desc">Track scholarship submissions and internship jobs in a visual progress pipeline.</p>
+        <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-primary btn-sm">Explore Opportunities to Apply</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{{ super() }}
+<!-- Update Application Status Modal -->
+<div class="modal-backdrop" id="updateStatusModal">
+  <div class="modal" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-edit" style="color: var(--primary-600);"></i> Update Application Status</h3>
+      <button class="btn-icon" onclick="closeModal('updateStatusModal')" style="border: none; background: transparent;">&times;</button>
+    </div>
+    <form action="{{ url_for('applications.update_status') }}" method="POST">
+      <input type="hidden" name="application_id" id="modalAppId">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="modalAppStatus">Current Progress Status</label>
+          <select name="status" id="modalAppStatus" class="form-control">
+            <option value="Saved">Saved</option>
+            <option value="Applied">Applied</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Shortlisted">Shortlisted</option>
+            <option value="Accepted">Accepted</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="modalAppNotes">Interview / Follow-up Notes</label>
+          <textarea name="notes" id="modalAppNotes" class="form-control" placeholder="e.g. Assessment round cleared, interview scheduled on Friday..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('updateStatusModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Status</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Manual Log Application Modal -->
+<div class="modal-backdrop" id="manualAppModal">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-plus-circle" style="color: var(--primary-600);"></i> Log Application</h3>
+      <button class="btn-icon" onclick="closeModal('manualAppModal')" style="border: none; background: transparent;">&times;</button>
+    </div>
+    <form action="{{ url_for('applications.create_application') }}" method="POST">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Opportunity Type</label>
+          <select name="opportunity_type" class="form-control">
+            <option value="scholarship">Scholarship</option>
+            <option value="internship">Internship</option>
+            <option value="course">Course</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Opportunity ID (or Reference #)</label>
+          <input type="number" name="opportunity_id" class="form-control" value="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Status</label>
+          <select name="status" class="form-control">
+            <option value="Applied">Applied</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Saved">Saved</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Submission / Decision Notes</label>
+          <textarea name="notes" class="form-control" placeholder="Add any initial notes or tracking details..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('manualAppModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Add to Tracker</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/applications.js') }}"></script>
+{% endblock %}

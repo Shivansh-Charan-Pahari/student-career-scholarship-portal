@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Logs | Admin Control Panel{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <i class="fas fa-shield-alt"></i>
+      <div>
+        <h4>Admin Console</h4>
+        <span>System Governance</span>
+      </div>
+    </div>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item">
+        <i class="fas fa-chart-pie"></i> Overview Analytics
+      </a>
+      <a href="{{ url_for('admin.students_list') }}" class="admin-nav-item">
+        <i class="fas fa-user-graduate"></i> Students Explorer
+      </a>
+      <a href="{{ url_for('admin.scholarships_crud') }}" class="admin-nav-item">
+        <i class="fas fa-award"></i> Scholarships CRUD
+      </a>
+      <a href="{{ url_for('admin.internships_crud') }}" class="admin-nav-item">
+        <i class="fas fa-briefcase"></i> Internships CRUD
+      </a>
+      <a href="{{ url_for('admin.courses_crud') }}" class="admin-nav-item">
+        <i class="fas fa-book-open"></i> Courses Catalog
+      </a>
+      <a href="{{ url_for('admin.applications_manage') }}" class="admin-nav-item">
+        <i class="fas fa-tasks"></i> Applications Pipeline
+      </a>
+      <a href="{{ url_for('admin.audit_logs') }}" class="admin-nav-item active">
+        <i class="fas fa-history"></i> System Audit Logs
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Admin Content -->
+  <section class="admin-content">
+    <div class="admin-header-row">
+      <div>
+        <h1 class="page-title">Immutable Audit Trail</h1>
+        <p class="page-subtitle">Historical records of all administrator modifications, publishes, status updates, and deletions.</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <span class="badge badge-primary"><i class="fas fa-lock"></i> Tamper-Evident</span>
+        <span class="badge badge-success"><i class="fas fa-server"></i> Production DB</span>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+      <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="filter-form" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+        <div class="form-group" style="flex: 2; min-width: 240px; margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.85rem;"><i class="fas fa-search"></i> Search Logs</label>
+          <input type="text" name="search" class="form-control" placeholder="Search by admin, action, or details..." value="{{ search }}">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 180px; margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.85rem;"><i class="fas fa-filter"></i> Entity Filter</label>
+          <select name="entity" class="form-control" onchange="this.form.submit()">
+            {% for e in entities %}
+              <option value="{{ e }}" {% if selected_entity == e %}selected{% endif %}>{{ e }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Filter</button>
+          <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary btn-sm"><i class="fas fa-redo"></i> Reset</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 80px;">Log ID</th>
+              <th style="width: 160px;">Timestamp</th>
+              <th style="width: 140px;">Admin User</th>
+              <th style="width: 160px;">Action Type</th>
+              <th style="width: 110px;">Entity</th>
+              <th>Details & Event Payload</th>
+              <th style="width: 100px;">IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+              <tr>
+                <td><code>#{{ log.id }}</code></td>
+                <td style="font-size: 0.85rem; color: var(--text-dim);">
+                  <i class="far fa-clock"></i> {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') if log.created_at else 'N/A' }}
+                </td>
+                <td>
+                  <div style="font-weight: 600; font-size: 0.9rem;">
+                    <i class="fas fa-user-shield" style="color: var(--primary-600); margin-right: 0.25rem;"></i> {{ log.admin_name }}
+                  </div>
+                </td>
+                <td>
+                  {% if 'CREATE' in log.action %}
+                    <span class="badge badge-success"><i class="fas fa-plus-circle"></i> {{ log.action }}</span>
+                  {% elif 'DELETE' in log.action %}
+                    <span class="badge badge-danger"><i class="fas fa-trash-alt"></i> {{ log.action }}</span>
+                  {% elif 'UPDATE' in log.action %}
+                    <span class="badge badge-primary"><i class="fas fa-edit"></i> {{ log.action }}</span>
+                  {% else %}
+                    <span class="badge badge-secondary">{{ log.action }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge badge-outline">{{ log.target_entity }}</span>
+                </td>
+                <td style="font-size: 0.9rem;">
+                  {{ log.details }}
+                </td>
+                <td>
+                  <code style="font-size: 0.8rem;">{{ log.ip_address or '127.0.0.1' }}</code>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 3rem 1rem;">
+                  <div class="empty-state">
+                    <i class="fas fa-history empty-icon"></i>
+                    <h3>No Audit Records Found</h3>
+                    <p>No logged administrative operations match your search criteria.</p>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if pagination and pagination.pages > 1 %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color);">
+          <div style="font-size: 0.85rem; color: var(--text-dim);">
+            Showing Page <strong>{{ pagination.page }}</strong> of <strong>{{ pagination.pages }}</strong> ({{ pagination.total }} Total Events)
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            {% if pagination.has_prev %}
+              <a href="{{ url_for('admin.audit_logs', page=pagination.prev_num, search=search, entity=selected_entity) }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-chevron-left"></i> Previous
+              </a>
+            {% endif %}
+            {% if pagination.has_next %}
+              <a href="{{ url_for('admin.audit_logs', page=pagination.next_num, search=search, entity=selected_entity) }}" class="btn btn-secondary btn-sm">
+                Next <i class="fas fa-chevron-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

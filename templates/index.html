@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}Discover Opportunities. Build Your Career.{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-tagline">
+          <i class="fas fa-sparkles"></i> 2026 Student Career Platform
+        </div>
+        <h1 class="hero-title">
+          Discover Scholarships.<br>
+          Find Internships.<br>
+          <span class="gradient-text">Build Your Future.</span>
+        </h1>
+        <p class="hero-subtitle">
+          One smart platform for college students to discover verified opportunities, calculate exact eligibility match scores, track application pipelines, and advance through an interactive career roadmap.
+        </p>
+        <div class="hero-cta">
+          {% if is_logged_in %}
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary btn-lg" id="hero-dashboard-btn">
+              <i class="fas fa-th-large"></i> Go to Dashboard
+            </a>
+          {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg" id="hero-get-started-btn">
+              <i class="fas fa-rocket"></i> Get Started Free
+            </a>
+          {% endif %}
+          <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-secondary btn-lg" id="hero-explore-btn">
+            <i class="fas fa-search"></i> Explore Opportunities
+          </a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+          <span><i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> 100% Free for Students</span>
+          <span><i class="fas fa-check-circle" style="color: var(--accent-emerald);"></i> Real-Time Eligibility Engine</span>
+        </div>
+      </div>
+
+      <!-- Hero Visual Dashboard Mockup (Pure CSS) -->
+      <div class="hero-illustration">
+        <div class="mockup-window">
+          <div class="mockup-header">
+            <div class="mockup-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="mockup-title"><i class="fas fa-shield-alt"></i> Student Career Portal Live Engine</div>
+            <span class="badge badge-success"><i class="fas fa-circle" style="font-size: 6px;"></i> Active</span>
+          </div>
+          <div class="mockup-body">
+            <!-- Simulated Match Card -->
+            <div class="mockup-card">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(99, 102, 241, 0.15); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                  <i class="fas fa-award"></i>
+                </div>
+                <div>
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Google Generation Scholarship</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">₹1,75,000 Award • Tech Students</div>
+                </div>
+              </div>
+              <span class="mockup-badge">94% Match</span>
+            </div>
+
+            <!-- Simulated Pipeline Card -->
+            <div class="mockup-card">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                  <i class="fas fa-briefcase"></i>
+                </div>
+                <div>
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Microsoft SWE Intern</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Stipend: ₹80,000/mo • Hybrid</div>
+                </div>
+              </div>
+              <span class="badge badge-primary">Shortlisted</span>
+            </div>
+
+            <!-- Simulated Roadmap Progress -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.775rem; font-weight: 700; margin-bottom: 0.35rem;">
+                <span>Full Stack Developer Roadmap</span>
+                <span style="color: var(--primary-600);">Stage 6/12</span>
+              </div>
+              <div class="progress-bar-container" style="margin: 0; height: 6px;">
+                <div class="progress-bar-fill" style="width: 50%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating Badges -->
+          <div class="floating-pill pill-1">
+            <i class="fas fa-bolt" style="color: var(--accent-amber);"></i> Match Score: 92%
+          </div>
+          <div class="floating-pill pill-2">
+            <i class="fas fa-check-circle"></i> Criteria Met ✅
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Live Portal Statistics -->
+<section class="container">
+  <div class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h3>{{ stats.students }}+</h3>
+        <p>Active Students</p>
+      </div>
+      <div class="stat-item">
+        <h3>{{ stats.scholarships }}+</h3>
+        <p>Scholarships Listed</p>
+      </div>
+      <div class="stat-item">
+        <h3>{{ stats.internships }}+</h3>
+        <p>Internship Openings</p>
+      </div>
+      <div class="stat-item">
+        <h3>{{ stats.courses }}+</h3>
+        <p>Curated Courses</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Students Use Us -->
+<section class="features-section container">
+  <div class="section-header">
+    <span class="section-tag">Powerful Features</span>
+    <h2 class="section-title">Everything You Need for Career Success</h2>
+    <p>We combine scholarship grants, industry internships, and guided engineering roadmaps into a unified dashboard.</p>
+  </div>
+
+  <div class="grid-4">
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fas fa-calculator"></i></div>
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Eligibility Engine</h3>
+      <p style="font-size: 0.9rem;">Instantly check your CGPA, family income, and branch against scholarship criteria with clear reasoning.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--primary-600));"><i class="fas fa-briefcase"></i></div>
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Internship Hub</h3>
+      <p style="font-size: 0.9rem;">Explore paid internships across Python, Web Dev, AI/ML, Cloud, and Data Science with remote filters.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background: linear-gradient(135deg, var(--accent-emerald), #059669);"><i class="fas fa-tasks"></i></div>
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Application Tracker</h3>
+      <p style="font-size: 0.9rem;">Track your applications across Saved, Applied, Under Review, Shortlisted, and Accepted pipeline stages.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background: linear-gradient(135deg, var(--accent-amber), var(--accent-rose));"><i class="fas fa-route"></i></div>
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Interactive Roadmap</h3>
+      <p style="font-size: 0.9rem;">A step-by-step 12-stage engineering curriculum from programming basics to landing your dream job.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Scholarships Section -->
+<section class="container" style="padding: 3rem 0;">
+  <div class="page-header">
+    <div>
+      <span class="section-tag">Financial Grants</span>
+      <h2 class="section-title">Featured Scholarships</h2>
+    </div>
+    <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-secondary">
+      View All Scholarships <i class="fas fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <div class="opportunity-grid">
+    {% for s in featured_scholarships %}
+      <div class="opp-card">
+        <div>
+          <div class="opp-top">
+            <span class="opp-provider"><i class="fas fa-university"></i> {{ s.provider }}</span>
+            <span class="badge badge-primary">Merit & Need</span>
+          </div>
+          <h3 class="opp-title">{{ s.name }}</h3>
+          <p class="opp-desc">{{ s.description }}</p>
+
+          <div class="opp-meta">
+            <div class="opp-meta-item"><i class="fas fa-graduation-cap"></i> Min CGPA: {{ s.minimum_cgpa if s.minimum_cgpa > 0 else 'None' }}</div>
+            <div class="opp-meta-item"><i class="fas fa-calendar-alt"></i> Deadline: {{ s.deadline }}</div>
+            <div class="opp-meta-item"><i class="fas fa-users"></i> {{ s.eligible_categories }}</div>
+          </div>
+        </div>
+
+        <div class="opp-footer">
+          <div class="opp-amount">{{ s.amount }}</div>
+          <div class="opp-actions">
+            <button class="btn btn-outline-primary btn-sm btn-check-eligibility" data-id="{{ s.id }}">
+              <i class="fas fa-calculator"></i> Check
+            </button>
+            <a href="{{ url_for('scholarships.scholarship_detail', scholarship_id=s.id) }}" class="btn btn-primary btn-sm">
+              Details
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Popular Internships Section -->
+<section class="container" style="padding: 3rem 0;">
+  <div class="page-header">
+    <div>
+      <span class="section-tag">Industry Openings</span>
+      <h2 class="section-title">Popular Internships</h2>
+    </div>
+    <a href="{{ url_for('internships.list_internships') }}" class="btn btn-secondary">
+      Explore All Internships <i class="fas fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <div class="opportunity-grid">
+    {% for intern in popular_internships %}
+      <div class="opp-card">
+        <div>
+          <div class="opp-top">
+            <span class="opp-provider"><i class="fas fa-building"></i> {{ intern.company }}</span>
+            <span class="badge badge-info">{{ intern.work_mode }}</span>
+          </div>
+          <h3 class="opp-title">{{ intern.title }}</h3>
+          <p class="opp-desc">{{ intern.description }}</p>
+
+          <div class="opp-meta">
+            <div class="opp-meta-item"><i class="fas fa-map-marker-alt"></i> {{ intern.location }}</div>
+            <div class="opp-meta-item"><i class="fas fa-clock"></i> {{ intern.duration }}</div>
+            <div class="opp-meta-item"><i class="fas fa-laptop-code"></i> {{ intern.domain }}</div>
+          </div>
+        </div>
+
+        <div class="opp-footer">
+          <div class="opp-amount">{{ intern.stipend }}</div>
+          <div class="opp-actions">
+            <button class="btn btn-secondary btn-sm btn-save-opp" data-type="internship" data-id="{{ intern.id }}">
+              <i class="far fa-bookmark"></i> Save
+            </button>
+            <a href="{{ url_for('internships.internship_detail', internship_id=intern.id) }}" class="btn btn-primary btn-sm">
+              Apply Now
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Career Roadmap Preview: Learn -> Build -> Apply -> Grow -->
+<section class="container" style="padding: 3rem 0 5rem;">
+  <div class="card" style="background: linear-gradient(135deg, var(--bg-card), rgba(99, 102, 241, 0.05)); border: 1px solid var(--border-subtle); padding: 3rem 2rem;">
+    <div class="section-header" style="margin-bottom: 2.5rem;">
+      <span class="section-tag">Career Acceleration</span>
+      <h2 class="section-title">Your 4-Stage Growth Path</h2>
+      <p>From core syntax to industry production: follow our structured developer roadmap.</p>
+    </div>
+
+    <div class="grid-4" style="text-align: center;">
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem;">1</div>
+        <h4 style="font-size: 1.1rem; margin-bottom: 0.35rem;">Learn Fundamentals</h4>
+        <p style="font-size: 0.85rem;">Master Python, C++, Web basics, and Relational Databases.</p>
+      </div>
+
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem;">2</div>
+        <h4 style="font-size: 1.1rem; margin-bottom: 0.35rem;">Build Projects</h4>
+        <p style="font-size: 0.85rem;">Create full-stack Flask web apps with live databases & Git.</p>
+      </div>
+
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem;">3</div>
+        <h4 style="font-size: 1.1rem; margin-bottom: 0.35rem;">Apply & Track</h4>
+        <p style="font-size: 0.85rem;">Submit applications for scholarships and internships with confidence.</p>
+      </div>
+
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem;">4</div>
+        <h4 style="font-size: 1.1rem; margin-bottom: 0.35rem;">Launch & Grow</h4>
+        <p style="font-size: 0.85rem;">Crack technical interviews and begin your professional career.</p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2.5rem;">
+      <a href="{{ url_for('career.roadmap_view') if is_logged_in else url_for('auth.register') }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-route"></i> Explore 12-Stage Interactive Roadmap
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/scholarships.js') }}"></script>
+{% endblock %}

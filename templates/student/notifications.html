@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications & Alerts - Student Career Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Navigation</div>
+      <a href="{{ url_for('student.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-th-large"></i> Dashboard
+      </a>
+      <a href="{{ url_for('student.profile') }}" class="sidebar-item">
+        <i class="fas fa-user-graduate"></i> Profile
+      </a>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('internships.list_internships') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('courses.list_courses') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('applications.list_applications') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+      <a href="{{ url_for('student.notifications') }}" class="sidebar-item active">
+        <i class="fas fa-bell"></i> Notifications
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Notifications & Important Alerts</h1>
+        <p class="page-subtitle">Track deadline warnings, application updates, and recommendation notices.</p>
+      </div>
+
+      {% if unread_count > 0 %}
+        <button class="btn btn-secondary btn-sm" id="markAllReadBtn">
+          <i class="fas fa-check-double"></i> Mark All as Read
+        </button>
+      {% endif %}
+    </div>
+
+    <!-- Notifications Feed -->
+    {% if notifications %}
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for n in notifications %}
+          <div class="card" style="padding: 1.25rem; {% if not n.is_read %}border-left: 4px solid var(--primary-600); background: linear-gradient(135deg, var(--bg-card), rgba(99, 102, 241, 0.04));{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+              <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: {% if not n.is_read %}rgba(99, 102, 241, 0.15){% else %}var(--border-subtle){% endif %}; color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                  <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                  <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem; color: var(--text-main);">
+                    {{ n.title }}
+                  </h3>
+                  <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                    {{ n.message }}
+                  </p>
+                  <div style="font-size: 0.775rem; color: var(--text-dim);">
+                    <i class="far fa-clock"></i> {{ n.created_at.strftime('%b %d, %Y %I:%M %p') if n.created_at else '' }}
+                  </div>
+                </div>
+              </div>
+
+              {% if n.link and n.link != '#' %}
+                <a href="{{ n.link }}" class="btn btn-secondary btn-sm" style="flex-shrink: 0;">
+                  View <i class="fas fa-arrow-right"></i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-check-circle"></i></div>
+        <h3 class="empty-state-title">You're all caught up</h3>
+        <p class="empty-state-desc">No new alerts or deadline reminders right now.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const markReadBtn = document.getElementById('markAllReadBtn');
+  if (markReadBtn) {
+    markReadBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/notifications/mark-read', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Updated', 'All notifications marked as read', 'success');
+          setTimeout(() => window.location.reload(), 600);
+        }
+      } catch (err) {
+        console.error('Mark read error:', err);
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Scholarships (Admin CRUD) - Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Admin Console</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.students_list') }}" class="sidebar-item">
+        <i class="fas fa-users"></i> Students
+      </a>
+      <a href="{{ url_for('admin.scholarships_crud') }}" class="sidebar-item active">
+        <i class="fas fa-award"></i> Scholarships ({{ scholarships|length }})
+      </a>
+      <a href="{{ url_for('admin.internships_crud') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('admin.courses_crud') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('admin.applications_manage') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Manage Scholarships</h1>
+        <p class="page-subtitle">Add new grants, modify eligibility parameters, or delete outdated listings.</p>
+      </div>
+
+      <button class="btn btn-primary btn-sm" onclick="openModal('addScholarshipModal')">
+        <i class="fas fa-plus"></i> Add New Scholarship
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <form method="GET" action="{{ url_for('admin.scholarships_crud') }}">
+        <div class="form-row" style="grid-template-columns: 3fr auto; align-items: flex-end;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="search-input">Search Scholarships</label>
+            <input type="text" name="search" id="search-input" class="form-control" placeholder="Search by scholarship name, trust, or provider..." value="{{ search }}">
+          </div>
+          <button type="submit" class="btn btn-primary" style="height: 42px;">
+            <i class="fas fa-search"></i> Search
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Scholarships Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Scholarship Name & Provider</th>
+            <th>Grant Amount</th>
+            <th>Min CGPA</th>
+            <th>Max Income</th>
+            <th>Branches</th>
+            <th>Deadline</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if scholarships %}
+            {% for s in scholarships %}
+              <tr>
+                <td>
+                  <strong>{{ s.name }}</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-university"></i> {{ s.provider }}</div>
+                </td>
+                <td><span class="badge badge-primary">{{ s.amount }}</span></td>
+                <td>{{ s.minimum_cgpa if s.minimum_cgpa > 0 else 'None' }}</td>
+                <td>{{ '₹{:,.0f}'.format(s.maximum_income) if s.maximum_income > 0 else 'No cap' }}</td>
+                <td><span style="font-size: 0.8rem;">{{ s.eligible_branches }}</span></td>
+                <td><span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-rose);">{{ s.deadline }}</span></td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn btn-secondary btn-sm btn-edit-scholarship" 
+                            data-item='{{ s.to_dict()|tojson }}'
+                            title="Edit Scholarship">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <form action="{{ url_for('admin.delete_scholarship', id=s.id) }}" method="POST" style="display: inline;">
+                      <button type="button" class="btn btn-icon btn-delete-confirm" data-name="{{ s.name }}" style="height: 32px; width: 32px; color: var(--accent-rose);" title="Delete Scholarship">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                No scholarships found.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{{ super() }}
+<!-- Add Scholarship Modal -->
+<div class="modal-backdrop" id="addScholarshipModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-plus-circle" style="color: var(--primary-600);"></i> Add New Scholarship</h3>
+      <button class="btn-icon" onclick="closeModal('addScholarshipModal')" style="border: none; background: transparent;">&times;</button>
+    </div>
+    <form action="{{ url_for('admin.scholarships_crud') }}" method="POST">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Scholarship Name *</label>
+            <input type="text" name="name" class="form-control" required placeholder="e.g. Tata Trust Merit Scholarship">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Provider / Organization *</label>
+            <input type="text" name="provider" class="form-control" required placeholder="e.g. Tata Trusts">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description *</label>
+          <textarea name="description" class="form-control" required placeholder="Detailed overview of scholarship terms and benefits..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount (Display String) *</label>
+            <input type="text" name="amount" class="form-control" required placeholder="e.g. ₹50,000 / Year">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount (Numeric for Sorting)</label>
+            <input type="number" step="100" name="amount_numeric" class="form-control" placeholder="50000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deadline (YYYY-MM-DD) *</label>
+            <input type="date" name="deadline" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Minimum CGPA (0 - 10)</label>
+            <input type="number" step="0.1" min="0" max="10" name="minimum_cgpa" class="form-control" placeholder="e.g. 7.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maximum Family Income (₹)</label>
+            <input type="number" step="1000" name="maximum_income" class="form-control" placeholder="0 if no limit">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Eligible Branches (Comma separated or 'All')</label>
+            <input type="text" name="eligible_branches" class="form-control" value="All">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Eligible Categories (Comma separated or 'All')</label>
+            <input type="text" name="eligible_categories" class="form-control" value="All">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Required Documents</label>
+          <textarea name="required_documents" class="form-control" placeholder="Marksheets, Income Certificate, etc."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Application Official URL</label>
+          <input type="url" name="application_url" class="form-control" placeholder="https://...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addScholarshipModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Create Scholarship</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Scholarship Modal -->
+<div class="modal-backdrop" id="editScholarshipModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-edit" style="color: var(--primary-600);"></i> Edit Scholarship</h3>
+      <button class="btn-icon" onclick="closeModal('editScholarshipModal')" style="border: none; background: transparent;">&times;</button>
+    </div>
+    <form id="editSchForm" method="POST">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Scholarship Name *</label>
+            <input type="text" name="name" id="editSchName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Provider *</label>
+            <input type="text" name="provider" id="editSchProvider" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description *</label>
+          <textarea name="description" id="editSchDesc" class="form-control" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount (Display)</label>
+            <input type="text" name="amount" id="editSchAmount" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount (Numeric)</label>
+            <input type="number" step="100" name="amount_numeric" id="editSchAmountNum" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deadline</label>
+            <input type="date" name="deadline" id="editSchDeadline" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Min CGPA</label>
+            <input type="number" step="0.1" min="0" max="10" name="minimum_cgpa" id="editSchCgpa" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Family Income (₹)</label>
+            <input type="number" step="1000" name="maximum_income" id="editSchIncome" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Eligible Branches</label>
+            <input type="text" name="eligible_branches" id="editSchBranches" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Eligible Categories</label>
+            <input type="text" name="eligible_categories" id="editSchCategories" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Required Documents</label>
+          <textarea name="required_documents" id="editSchDocs" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Official URL</label>
+          <input type="url" name="application_url" id="editSchUrl" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editScholarshipModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Universal Delete Confirmation Modal -->
+<div class="modal-backdrop" id="deleteConfirmModal">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3 class="modal-title" style="color: var(--accent-rose);"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3>
+      <button class="btn-icon" onclick="closeModal('deleteConfirmModal')" style="border: none; background: transparent;">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="deleteConfirmText" style="color: var(--text-main); font-size: 0.95rem;"></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+      <button type="button" class="btn btn-danger" id="deleteConfirmBtn"><i class="fas fa-trash"></i> Delete Permanently</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

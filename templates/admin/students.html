@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Students - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Admin Console</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.students_list') }}" class="sidebar-item active">
+        <i class="fas fa-users"></i> Students ({{ students|length }})
+      </a>
+      <a href="{{ url_for('admin.scholarships_crud') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('admin.internships_crud') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('admin.courses_crud') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('admin.applications_manage') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Registered Students Explorer</h1>
+        <p class="page-subtitle">Inspect student profiles, academic scores, and application portfolios.</p>
+      </div>
+    </div>
+
+    <!-- Search Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <form method="GET" action="{{ url_for('admin.students_list') }}">
+        <div class="form-row" style="grid-template-columns: 3fr auto; align-items: flex-end;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="search-input">Search by Student Name or Email</label>
+            <input type="text" name="search" id="search-input" class="form-control" placeholder="Search rahul, priya, gmail.com..." value="{{ search }}">
+          </div>
+          <button type="submit" class="btn btn-primary" style="height: 42px;">
+            <i class="fas fa-search"></i> Search Students
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Students Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student Name & Email</th>
+            <th>Branch & College</th>
+            <th>CGPA</th>
+            <th>Category</th>
+            <th>Target Career Role</th>
+            <th>Joined Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if students %}
+            {% for s in students %}
+              {% set p = s.profile %}
+              <tr>
+                <td>
+                  <div class="table-avatar-cell">
+                    <div class="table-avatar">{{ s.name[0] }}</div>
+                    <div>
+                      <strong>{{ s.name }}</strong>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">{{ s.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <strong>{{ p.branch or 'Not specified' }}</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">{{ p.college or p.university or 'N/A' }}</div>
+                </td>
+                <td>
+                  <span class="badge badge-primary">{{ p.cgpa if p and p.cgpa > 0 else 'N/A' }}</span>
+                </td>
+                <td>{{ p.category or 'General' }}</td>
+                <td>{{ p.career_goal or p.preferred_role or 'Full Stack Developer' }}</td>
+                <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else 'N/A' }}</td>
+                <td>
+                  <a href="{{ url_for('admin.student_detail', student_id=s.id) }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-eye"></i> View Profile
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                No students match your query.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

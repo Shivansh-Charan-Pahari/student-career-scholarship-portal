@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ selected_role }} Career Roadmap - Student Career Portal{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Navigation</div>
+      <a href="{{ url_for('student.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-th-large"></i> Dashboard
+      </a>
+      <a href="{{ url_for('student.profile') }}" class="sidebar-item">
+        <i class="fas fa-user-graduate"></i> Profile
+      </a>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('internships.list_internships') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('courses.list_courses') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('applications.list_applications') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+      <a href="{{ url_for('career.career_view') }}" class="sidebar-item">
+        <i class="fas fa-compass"></i> Career Readiness
+      </a>
+      <a href="{{ url_for('career.roadmap_view') }}" class="sidebar-item active">
+        <i class="fas fa-route"></i> Roadmap
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ selected_role }} Career Roadmap</h1>
+        <p class="page-subtitle">Your step-by-step interactive milestone progression from core concepts to technical hiring.</p>
+      </div>
+
+      <!-- Target Career Pathway Selector -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <label for="roadmapRoleSelect" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);"><i class="fas fa-compass"></i> Pathway:</label>
+        <select id="roadmapRoleSelect" class="form-control" style="width: 240px; font-weight: 600;" onchange="window.location.href='{{ url_for('career.roadmap_view') }}?role=' + encodeURIComponent(this.value)">
+          {% for r in all_roles %}
+            <option value="{{ r }}" {% if selected_role == r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+        
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 0.5rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Completed:</span>
+          <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-emerald);">
+            <span id="roadmapCompletedCount">{{ completed_count }}</span> / {{ total_stages }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar Card -->
+    <div class="card" style="margin-bottom: 2.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-weight: 700; font-size: 0.95rem;">Roadmap Mastery for {{ selected_role }}</span>
+        <span id="roadmapProgressPercent" style="font-weight: 800; color: var(--primary-600); font-size: 1.1rem;">
+          {{ progress_percent }}%
+        </span>
+      </div>
+      <div class="progress-bar-container" style="height: 12px; margin: 0;">
+        <div id="roadmapProgressBar" class="progress-bar-fill {% if progress_percent >= 80 %}success{% endif %}" style="width: {{ progress_percent }}%;"></div>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+        <i class="fas fa-info-circle"></i> Check off milestones as you master concepts. Progress persists automatically to your student account.
+      </p>
+    </div>
+
+    <!-- Dynamic Vertical Timeline -->
+    <div class="roadmap-timeline">
+      {% for stage in stages %}
+        <div class="roadmap-node {% if stage.completed %}completed{% endif %}" id="stage-node-{{ stage.id }}">
+          <!-- Number Marker -->
+          <div class="roadmap-marker">
+            {{ stage.id }}
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <span class="badge badge-primary" style="font-size: 0.7rem;">{{ stage.category }}</span>
+                <h3 style="font-size: 1.15rem; color: var(--text-main);">{{ stage.title }}</h3>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                {{ stage.description }}
+              </p>
+
+              <!-- Competencies / Skills Pills -->
+              <div class="skills-wrapper" style="margin-top: 0; margin-bottom: 0.5rem;">
+                {% for sk in stage.skills %}
+                  <span class="skill-tag" style="font-size: 0.775rem; padding: 0.2rem 0.6rem;">
+                    {{ sk }}
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Checkbox & Resource Link -->
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 700; font-size: 0.9rem; color: var(--text-main); user-select: none;">
+                <input type="checkbox" 
+                       class="roadmap-checkbox" 
+                       data-stage-id="{{ stage.id }}" 
+                       data-career-role="{{ selected_role }}"
+                       {% if stage.completed %}checked{% endif %}
+                       style="width: 20px; height: 20px; accent-color: var(--accent-emerald); cursor: pointer;">
+                <span>Completed</span>
+              </label>
+
+              {% if stage.resources and stage.resources != '#' %}
+                <a href="{{ stage.resources }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-size: 0.775rem;">
+                  <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i> Learning Resource
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/roadmap.js') }}"></script>
+{% endblock %}

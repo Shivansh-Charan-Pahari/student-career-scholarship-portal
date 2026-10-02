@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.name }} - Student Profile Details (Admin){% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Admin Console</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="sidebar-item">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.students_list') }}" class="sidebar-item active">
+        <i class="fas fa-users"></i> Students
+      </a>
+      <a href="{{ url_for('admin.scholarships_crud') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships
+      </a>
+      <a href="{{ url_for('admin.internships_crud') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships
+      </a>
+      <a href="{{ url_for('admin.courses_crud') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses
+      </a>
+      <a href="{{ url_for('admin.applications_manage') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div style="margin-bottom: 1.5rem;">
+      <a href="{{ url_for('admin.students_list') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Back to Students List
+      </a>
+    </div>
+
+    <div class="page-header">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="table-avatar" style="width: 52px; height: 52px; font-size: 1.4rem;">
+          {{ student.name[0] }}
+        </div>
+        <div>
+          <h1 class="page-title">{{ student.name }}</h1>
+          <p class="page-subtitle">{{ student.email }} • Registered: {{ student.created_at.strftime('%b %d, %Y') if student.created_at else '' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Profile Info -->
+      <div class="card">
+        <h3 class="card-title" style="margin-bottom: 1.25rem;"><i class="fas fa-id-card"></i> Academic & Personal Data</h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div><strong>Degree & Branch:</strong> {{ profile.degree or 'N/A' }} in {{ profile.branch or 'N/A' }}</div>
+          <div><strong>Current Year / Sem:</strong> {{ profile.current_year or 'N/A' }} ({{ profile.semester or 'N/A' }})</div>
+          <div><strong>Cumulative CGPA:</strong> {{ profile.cgpa or 'N/A' }}</div>
+          <div><strong>10th / 12th Marks:</strong> {{ profile.tenth_percentage }}% / {{ profile.twelfth_percentage }}%</div>
+          <div><strong>College:</strong> {{ profile.college or 'N/A' }}</div>
+          <div><strong>University:</strong> {{ profile.university or 'N/A' }}</div>
+          <div><strong>Family Income:</strong> ₹{{ '{:,.0f}'.format(profile.family_income) if profile.family_income else '0' }}</div>
+          <div><strong>Category:</strong> {{ profile.category or 'General' }}</div>
+          <div><strong>Contact Phone:</strong> {{ profile.phone or 'N/A' }}</div>
+          <div><strong>Location:</strong> {{ profile.city or 'N/A' }}, {{ profile.state or 'N/A' }}</div>
+        </div>
+
+        <h4 style="font-size: 1rem; margin-bottom: 0.5rem;"><i class="fas fa-code"></i> Verified Skills</h4>
+        <div class="skills-wrapper">
+          {% for s in profile.skills %}
+            <span class="skill-tag">
+              {{ s.name }} <span class="skill-level-badge level-{{ s.level }}">{{ s.level }}</span>
+            </span>
+          {% else %}
+            <p style="font-size: 0.85rem; color: var(--text-dim);">No skills added.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Application Records -->
+      <div class="card">
+        <h3 class="card-title" style="margin-bottom: 1.25rem;"><i class="fas fa-tasks"></i> Student Applications ({{ applications|length }})</h3>
+
+        {% if applications %}
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for app in applications %}
+              {% set opp = app.get_opportunity() %}
+              <div style="padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                  <strong style="font-size: 0.9rem;">
+                    {{ app.opportunity_title }}
+                  </strong>
+                  <span class="badge badge-primary">{{ app.status }}</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  {{ app.opportunity_type|capitalize }} • Logged: {{ app.application_date.strftime('%Y-%m-%d') if app.application_date else 'N/A' }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="font-size: 0.85rem; color: var(--text-muted);">No applications logged by this student.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

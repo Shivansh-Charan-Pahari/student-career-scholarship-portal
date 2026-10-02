@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found (404){% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 6rem 1.5rem; text-align: center;">
+  <div style="max-width: 500px; margin: 0 auto;">
+    <div style="font-size: 5rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--primary-600); line-height: 1; margin-bottom: 1rem;">
+      404
+    </div>
+    <h2 style="font-size: 1.75rem; margin-bottom: 0.75rem;">Oops! Opportunity Not Found</h2>
+    <p style="margin-bottom: 2rem;">The page or resource you are looking for might have been moved, updated, or does not exist.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="fas fa-home"></i> Back to Home
+      </a>
+      <a href="{{ url_for('scholarships.list_scholarships') }}" class="btn btn-secondary">
+        <i class="fas fa-award"></i> Browse Scholarships
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

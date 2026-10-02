@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Server Error (500){% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 6rem 1.5rem; text-align: center;">
+  <div style="max-width: 500px; margin: 0 auto;">
+    <div style="font-size: 5rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--accent-rose); line-height: 1; margin-bottom: 1rem;">
+      500
+    </div>
+    <h2 style="font-size: 1.75rem; margin-bottom: 0.75rem;">Something Went Wrong</h2>
+    <p style="margin-bottom: 2rem;">Our servers encountered an unexpected issue while processing your request. Please try again shortly.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="fas fa-home"></i> Return Home
+      </a>
+      <button onclick="window.location.reload()" class="btn btn-secondary">
+        <i class="fas fa-sync-alt"></i> Refresh Page
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

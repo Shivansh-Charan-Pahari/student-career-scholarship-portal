@@ -1,0 +1,737 @@
+/* ==========================================================================
+   STUDENT & ADMIN DASHBOARD SPECIFIC STYLES
+   Polished Modern Layout, Metrics, Opportunity Cards, Pipeline & Roadmap
+   ========================================================================== */
+
+.app-layout {
+  display: flex;
+  min-height: calc(100vh - 72px);
+  background-color: var(--bg-main);
+}
+
+/* ==========================================================================
+   SIDEBAR NAVIGATION
+   ========================================================================== */
+.sidebar {
+  width: 270px;
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  padding: 1.75rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+  position: sticky;
+  top: 72px;
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebar-label {
+  font-size: 0.725rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  padding: 0.85rem 0.85rem 0.4rem;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.925rem;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  position: relative;
+}
+
+.sidebar-item i {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  color: var(--text-dim);
+  transition: all var(--transition-fast);
+}
+
+.sidebar-item:hover {
+  color: var(--primary-600);
+  background-color: var(--primary-50);
+}
+
+.sidebar-item:hover i {
+  color: var(--primary-600);
+  transform: scale(1.1);
+}
+
+.sidebar-item.active {
+  color: var(--primary-600);
+  background-color: var(--primary-100);
+  font-weight: 700;
+}
+
+.sidebar-item.active i {
+  color: var(--primary-600);
+}
+
+[data-theme="dark"] .sidebar-item:hover {
+  color: var(--primary-300);
+  background-color: rgba(99, 102, 241, 0.14);
+}
+
+[data-theme="dark"] .sidebar-item:hover i {
+  color: var(--primary-300);
+}
+
+[data-theme="dark"] .sidebar-item.active {
+  color: var(--primary-300);
+  background-color: rgba(99, 102, 241, 0.22);
+}
+
+[data-theme="dark"] .sidebar-item.active i {
+  color: var(--primary-300);
+}
+
+.sidebar-badge {
+  margin-left: auto;
+  font-size: 0.725rem;
+  padding: 0.2rem 0.55rem;
+}
+
+/* User Card in Sidebar Footer */
+.sidebar-user {
+  padding: 0.9rem;
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 1.5rem;
+}
+
+.sidebar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-600), var(--accent-cyan));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.sidebar-user-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar-user-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   MAIN DASHBOARD CONTENT
+   ========================================================================== */
+.main-content {
+  flex: 1;
+  padding: 2.25rem 2.5rem;
+  background-color: var(--bg-main);
+  overflow-y: auto;
+  max-width: 1400px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.25rem;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   DASHBOARD METRIC KPI CARDS
+   ========================================================================== */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.25rem;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.65rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-600), var(--accent-cyan));
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.metric-card:hover::before {
+  opacity: 1;
+}
+
+.metric-info {
+  flex: 1;
+}
+
+.metric-info h4 {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.metric-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-main);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.metric-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.icon-purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+.icon-blue { background: rgba(99, 102, 241, 0.15); color: var(--primary-600); }
+.icon-cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+.icon-emerald { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+.icon-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+
+/* Progress Bar Component */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--border-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 0.75rem 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-600), var(--accent-cyan));
+  border-radius: var(--radius-full);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progress-bar-fill.success {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
+}
+
+/* ==========================================================================
+   OPPORTUNITY CARDS (Scholarships / Internships / Courses)
+   ========================================================================== */
+.opportunity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.75rem;
+}
+
+.opp-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.opp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.opp-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.opp-provider {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-600);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+[data-theme="dark"] .opp-provider {
+  color: var(--primary-400);
+}
+
+.opp-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.opp-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1.35rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+}
+
+.opp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1.35rem;
+  font-size: 0.825rem;
+}
+
+.opp-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--bg-surface);
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.opp-meta-item i {
+  color: var(--primary-500);
+}
+
+.opp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: auto;
+  gap: 0.75rem;
+}
+
+.opp-amount {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.opp-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+/* Match Score Pill */
+.match-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.775rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.score-high {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+[data-theme="dark"] .score-high {
+  background-color: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.score-medium {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+[data-theme="dark"] .score-medium {
+  background-color: rgba(245, 158, 11, 0.22);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.score-low {
+  background-color: #ffe4e6;
+  color: #9f1239;
+  border: 1px solid #fecdd3;
+}
+
+[data-theme="dark"] .score-low {
+  background-color: rgba(244, 63, 94, 0.22);
+  color: #fda4af;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+/* ==========================================================================
+   APPLICATION PIPELINE TIMELINE
+   ========================================================================== */
+.pipeline-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.75rem 0;
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.pipeline-container::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 35px;
+  right: 35px;
+  height: 4px;
+  background-color: var(--border-subtle);
+  z-index: 1;
+}
+
+.pipeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  position: relative;
+  z-index: 2;
+}
+
+.pipeline-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--bg-surface);
+  border: 3px solid var(--border-subtle);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  transition: all var(--transition-base);
+}
+
+.pipeline-step.active .pipeline-dot {
+  background-color: var(--primary-600);
+  border-color: var(--primary-200);
+  color: white;
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.5);
+  transform: scale(1.12);
+}
+
+.pipeline-step.completed .pipeline-dot {
+  background-color: var(--accent-emerald);
+  border-color: #a7f3d0;
+  color: white;
+}
+
+.pipeline-label {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pipeline-step.active .pipeline-label {
+  color: var(--primary-600);
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   SKILLS SYSTEM & CHIPS
+   ========================================================================== */
+.skills-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.95rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  transition: all var(--transition-fast);
+}
+
+.skill-tag:hover {
+  border-color: var(--primary-400);
+  background-color: var(--primary-50);
+}
+
+[data-theme="dark"] .skill-tag:hover {
+  background-color: rgba(99, 102, 241, 0.15);
+}
+
+.skill-level-badge {
+  font-size: 0.7rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+}
+
+.level-Beginner { background-color: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+.level-Intermediate { background-color: rgba(99, 102, 241, 0.15); color: var(--primary-600); }
+.level-Advanced { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+.skill-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-fast);
+}
+
+.skill-delete-btn:hover {
+  color: var(--accent-rose);
+}
+
+/* ==========================================================================
+   12-STAGE INTERACTIVE ROADMAP TIMELINE
+   ========================================================================== */
+.roadmap-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  position: relative;
+  padding-left: 2.75rem;
+}
+
+.roadmap-timeline::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 18px;
+  width: 3px;
+  background: linear-gradient(180deg, var(--primary-600), var(--accent-cyan));
+  border-radius: var(--radius-full);
+}
+
+.roadmap-node {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.75rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.roadmap-node:hover {
+  transform: translateX(5px);
+  border-color: var(--primary-400);
+  box-shadow: var(--shadow-md);
+}
+
+.roadmap-node.completed {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, var(--bg-card), rgba(16, 185, 129, 0.05));
+}
+
+.roadmap-marker {
+  position: absolute;
+  left: -2.75rem;
+  top: 1.65rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 3px solid var(--primary-600);
+  color: var(--primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.775rem;
+  font-weight: 800;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.roadmap-node.completed .roadmap-marker {
+  background: var(--accent-emerald);
+  border-color: #a7f3d0;
+  color: white;
+}
+
+/* ==========================================================================
+   TAB NAVIGATION SYSTEM
+   ========================================================================== */
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 1.75rem;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 0.85rem 1.35rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--primary-600);
+}
+
+.tab-btn.active {
+  color: var(--primary-600);
+  border-bottom-color: var(--primary-600);
+}
+
+[data-theme="dark"] .tab-btn:hover,
+[data-theme="dark"] .tab-btn.active {
+  color: var(--primary-300);
+  border-bottom-color: var(--primary-400);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+/* Deadline Widget */
+.deadline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.deadline-item:last-child {
+  border-bottom: none;
+}
+
+.deadline-date {
+  text-align: right;
+  font-size: 0.825rem;
+  font-weight: 800;
+  color: var(--accent-rose);
+}

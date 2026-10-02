@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrator Dashboard - Control Panel{% endblock %}
+
+{% block content %}
+<div class="app-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Admin Console</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="sidebar-item active">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.students_list') }}" class="sidebar-item">
+        <i class="fas fa-users"></i> Students ({{ stats.total_students }})
+      </a>
+      <a href="{{ url_for('admin.scholarships_crud') }}" class="sidebar-item">
+        <i class="fas fa-award"></i> Scholarships ({{ stats.total_scholarships }})
+      </a>
+      <a href="{{ url_for('admin.internships_crud') }}" class="sidebar-item">
+        <i class="fas fa-briefcase"></i> Internships ({{ stats.total_internships }})
+      </a>
+      <a href="{{ url_for('admin.courses_crud') }}" class="sidebar-item">
+        <i class="fas fa-book-open"></i> Courses ({{ stats.total_courses }})
+      </a>
+      <a href="{{ url_for('admin.applications_manage') }}" class="sidebar-item">
+        <i class="fas fa-tasks"></i> Applications ({{ stats.total_applications }})
+      </a>
+    </div>
+
+    <!-- Admin Badge Footer -->
+    <div class="sidebar-user" style="border-color: rgba(99, 102, 241, 0.3);">
+      <div class="sidebar-avatar" style="background: linear-gradient(135deg, #1e1b4b, var(--primary-600));">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Administrator</div>
+        <div class="sidebar-user-role">Super Admin Role</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Administrator Analytics & Operations</h1>
+        <p class="page-subtitle">Portal wide statistics, data distribution, and real-time opportunity management.</p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('admin.scholarships_crud') }}" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus"></i> Add Scholarship
+        </a>
+        <a href="{{ url_for('admin.internships_crud') }}" class="btn btn-secondary btn-sm">
+          <i class="fas fa-plus"></i> Add Internship
+        </a>
+      </div>
+    </div>
+
+    <!-- 5 Top Metric Stat Cards -->
+    <div class="metrics-row" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Total Students</h4>
+          <div class="metric-value">{{ stats.total_students }}</div>
+        </div>
+        <div class="metric-icon icon-blue"><i class="fas fa-users"></i></div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Scholarships</h4>
+          <div class="metric-value">{{ stats.total_scholarships }}</div>
+        </div>
+        <div class="metric-icon icon-emerald"><i class="fas fa-award"></i></div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Internships</h4>
+          <div class="metric-value">{{ stats.total_internships }}</div>
+        </div>
+        <div class="metric-icon icon-purple"><i class="fas fa-briefcase"></i></div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Courses</h4>
+          <div class="metric-value">{{ stats.total_courses }}</div>
+        </div>
+        <div class="metric-icon icon-cyan"><i class="fas fa-book-open"></i></div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Applications</h4>
+          <div class="metric-value">{{ stats.total_applications }}</div>
+        </div>
+        <div class="metric-icon icon-amber"><i class="fas fa-paper-plane"></i></div>
+      </div>
+    </div>
+
+    <!-- Charts Analytics Grid -->
+    <div class="charts-grid">
+      <!-- 1. Application Funnel Doughnut Chart -->
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-pie"></i> Student Application Stages</h3>
+        <div class="chart-wrapper">
+          <canvas id="adminAppStatusChart" data-chart='{{ app_status_counts|tojson }}'></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Internship Domains Bar Chart -->
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-bar"></i> Internship Opportunities by Domain</h3>
+        <div class="chart-wrapper">
+          <canvas id="adminDomainChart" data-chart='{{ domain_counts|tojson }}'></canvas>
+        </div>
+      </div>
+
+      <!-- 3. Student Category Distribution Pie Chart -->
+      <div class="chart-card">
+        <h3><i class="fas fa-users"></i> Student Category Demographics</h3>
+        <div class="chart-wrapper">
+          <canvas id="adminCategoryChart" data-chart='{{ cat_counts|tojson }}'></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Student Submissions Table -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-clock-rotate-left"></i> Recent Student Applications</h3>
+        <a href="{{ url_for('admin.applications_manage') }}" class="btn btn-secondary btn-sm">Manage All</a>
+      </div>
+
+      {% if recent_applications %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Applicant</th>
+                <th>Opportunity</th>
+                <th>Type</th>
+                <th>Date Logged</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in recent_applications %}
+                {% set opp = app.get_opportunity() %}
+                <tr>
+                  <td>
+                    <div class="table-avatar-cell">
+                      <div class="table-avatar">{{ app.user.name[0] }}</div>
+                      <div>
+                        <strong>{{ app.user.name }}</strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ app.user.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <strong>{{ app.opportunity_title }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge {% if app.opportunity_type == 'scholarship' %}badge-primary{% elif app.opportunity_type == 'internship' %}badge-info{% else %}badge-warning{% endif %}">
+                      {{ app.opportunity_type|capitalize }}
+                    </span>
+                  </td>
+                  <td>{{ app.application_date.strftime('%Y-%m-%d') if app.application_date else 'N/A' }}</td>
+                  <td>
+                    <span class="badge {% if app.status == 'Accepted' %}badge-success{% elif app.status == 'Rejected' %}badge-danger{% elif app.status == 'Under Review' %}badge-warning{% else %}badge-primary{% endif %}">
+                      {{ app.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <form action="{{ url_for('admin.update_application_status_admin', id=app.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
+                      <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: 120px;">
+                        <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                        <option value="Under Review" {% if app.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                        <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                        <option value="Accepted" {% if app.status == 'Accepted' %}selected{% endif %}>Accepted</option>
+                        <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                      </select>
+                      <button type="submit" class="btn btn-secondary btn-sm" title="Save Status">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p style="font-size: 0.85rem; color: var(--text-muted); padding: 1rem 0;">No applications recorded yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

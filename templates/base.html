@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Student Career & Scholarship Portal{% endblock %} | Discover Opportunities</title>
+  <meta name="description" content="One smart platform for college students to discover scholarships, explore internships, check eligibility, track applications, and master a personalized career roadmap.">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Free CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- App Header / Navbar -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <!-- Brand Logo -->
+      <a href="{{ url_for('index') }}" class="brand-logo" id="nav-brand-logo">
+        <i class="fas fa-graduation-cap"></i>
+        <span>CareerPortal</span>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="nav-links" id="nav-links">
+        {% if is_logged_in and not is_admin %}
+          <a href="{{ url_for('student.dashboard') }}" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i> Dashboard
+          </a>
+        {% elif is_admin %}
+          <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if '/admin' in request.path %}active{% endif %}">
+            <i class="fas fa-shield-alt"></i> Admin Panel
+          </a>
+        {% else %}
+          <a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+            <i class="fas fa-home"></i> Home
+          </a>
+        {% endif %}
+
+        <a href="{{ url_for('scholarships.list_scholarships') }}" class="nav-link {% if '/scholarship' in request.path %}active{% endif %}">
+          <i class="fas fa-award"></i> Scholarships
+        </a>
+        <a href="{{ url_for('internships.list_internships') }}" class="nav-link {% if '/internship' in request.path %}active{% endif %}">
+          <i class="fas fa-briefcase"></i> Internships
+        </a>
+        <a href="{{ url_for('courses.list_courses') }}" class="nav-link {% if '/courses' in request.path %}active{% endif %}">
+          <i class="fas fa-book-open"></i> Courses
+        </a>
+
+        {% if is_logged_in and not is_admin %}
+          <a href="{{ url_for('career.career_view') }}" class="nav-link {% if request.path == '/career' %}active{% endif %}">
+            <i class="fas fa-compass"></i> Career
+          </a>
+          <a href="{{ url_for('career.roadmap_view') }}" class="nav-link {% if request.path == '/roadmap' %}active{% endif %}">
+            <i class="fas fa-route"></i> Roadmap
+          </a>
+        {% endif %}
+      </nav>
+
+      <!-- Navbar Action Controls -->
+      <div class="nav-actions">
+        <!-- Live Instant Search Bar -->
+        <div class="nav-search">
+          <i class="fas fa-search"></i>
+          <input type="text" id="global-search-input" placeholder="Search opportunities, skills..." autocomplete="off">
+          <div id="global-search-dropdown" class="search-results-dropdown"></div>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button class="btn-icon" id="theme-toggle-btn" title="Toggle Dark / Light mode" aria-label="Toggle theme">
+          <i class="fas fa-moon" id="theme-icon"></i>
+        </button>
+
+        {% if is_logged_in %}
+          <!-- Notifications Bell -->
+          <a href="{{ url_for('student.notifications') if not is_admin else '#' }}" class="btn-icon" title="Notifications" aria-label="View notifications">
+            <i class="fas fa-bell"></i>
+            {% if unread_notifications_count > 0 %}
+              <span class="notif-badge" id="notif-badge-counter">{{ unread_notifications_count }}</span>
+            {% endif %}
+          </a>
+
+          <!-- User Menu -->
+          {% if not is_admin %}
+            <a href="{{ url_for('student.profile') }}" class="btn btn-secondary btn-sm" style="padding: 0.4rem 0.85rem;" title="View Profile">
+              <i class="fas fa-user-circle"></i> {{ current_user.name.split(' ')[0] }}
+            </a>
+          {% else %}
+            <span class="badge badge-primary" style="font-size: 0.8rem;"><i class="fas fa-user-shield"></i> Admin</span>
+          {% endif %}
+
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm" title="Log Out" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+          </a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" id="nav-login-btn">Log In</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm" id="nav-register-btn">Register</a>
+          <a href="{{ url_for('auth.admin_login') }}" class="btn-icon" title="Admin Portal" aria-label="Admin Portal"><i class="fas fa-shield-alt"></i></a>
+        {% endif %}
+
+        <!-- Mobile Hamburger Toggle -->
+        <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle navigation">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Toast Message Notifications -->
+  <div class="toast-container" id="toast-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="toast toast-{{ category }}">
+            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} toast-icon"></i>
+            <div class="toast-content">
+              <div class="toast-title">
+                {% if category == 'success' %}Success{% elif category == 'danger' %}Error{% elif category == 'warning' %}Attention{% else %}Notification{% endif %}
+              </div>
+              <div class="toast-message">{{ message }}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Body Content Block -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Modals Placeholder -->
+  {% block modals %}
+    <!-- Universal Eligibility Result Modal -->
+    <div class="modal-backdrop" id="eligibilityModal">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h3 class="modal-title"><i class="fas fa-calculator" style="color: var(--primary-600); margin-right: 0.5rem;"></i> Eligibility & Match Engine</h3>
+          <button class="btn-icon" onclick="closeModal('eligibilityModal')" style="border: none; background: transparent;">&times;</button>
+        </div>
+        <div class="modal-body" id="eligibilityModalContent">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  {% endblock %}
+
+  <!-- Application Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{{ url_for('index') }}" class="brand-logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>CareerPortal</span>
+          </a>
+          <p>Discover Opportunities. Build Your Career. Empowering students across disciplines to excel through scholarships, internships, and guided skill roadmaps.</p>
+          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+            <span class="badge badge-primary"><i class="fas fa-code"></i> Flask + SQLite</span>
+            <span class="badge badge-success"><i class="fas fa-check"></i> Viva Ready</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Opportunities</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('scholarships.list_scholarships') }}">Merit Scholarships</a>
+            <a href="{{ url_for('scholarships.list_scholarships') }}?category=Need-based">Need-Based Grants</a>
+            <a href="{{ url_for('internships.list_internships') }}">Software Internships</a>
+            <a href="{{ url_for('internships.list_internships') }}?work_mode=Remote">Remote Opportunities</a>
+            <a href="{{ url_for('courses.list_courses') }}">Certified Courses</a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Student Tools</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('career.roadmap_view') }}">12-Stage Career Roadmap</a>
+            <a href="{{ url_for('career.career_view') }}">Skill Gap Analysis</a>
+            <a href="{{ url_for('applications.list_applications') if is_logged_in else url_for('auth.login') }}">Application Pipeline Tracker</a>
+            <a href="{{ url_for('student.profile') if is_logged_in else url_for('auth.login') }}">Academic Profile Score</a>
+            <a href="{{ url_for('student.saved') if is_logged_in else url_for('auth.login') }}">Bookmarked Items</a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Portal Access</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('auth.login') }}">Student Sign In</a>
+            <a href="{{ url_for('auth.register') }}">Create Free Account</a>
+            <a href="{{ url_for('auth.admin_login') }}">Administrator Portal</a>
+            <span style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem; display: block;">
+              Demo Admin: <code>admin@portal.com</code>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 Student Career & Scholarship Portal. Built for university demonstration and academic portfolio.
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <span>HTML5 / CSS3 / Vanilla JS</span>
+          <span>•</span>
+          <span>Python Flask</span>
+          <span>•</span>
+          <span>SQLAlchemy ORM</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
